@@ -18,15 +18,28 @@ def _get_client():
     return _client
 
 
-def web_search(query: str, max_results: int = 5) -> list[dict]:
-    """Return a list of {title, url, content, score} hits from Tavily."""
+def web_search(
+    query: str,
+    max_results: int = 5,
+    topic: str = "general",
+    time_range: str | None = None,
+) -> list[dict]:
+    """Return a list of {title, url, content, score} hits from Tavily.
+
+    topic: "general" or "news" (news weights recent journalism heavier).
+    time_range: "day", "week", "month", "year" — restricts result freshness.
+    """
     client = _get_client()
-    resp = client.search(
-        query=query,
-        max_results=max_results,
-        search_depth="advanced",
-        include_answer=False,
-    )
+    kwargs = {
+        "query": query,
+        "max_results": max_results,
+        "search_depth": "advanced",
+        "include_answer": False,
+        "topic": topic,
+    }
+    if time_range:
+        kwargs["time_range"] = time_range
+    resp = client.search(**kwargs)
     return [
         {
             "title": r.get("title", "") or "",
