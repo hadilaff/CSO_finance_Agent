@@ -1,0 +1,362 @@
+{
+  "date": "2026-06-19",
+  "generated_at": "2026-06-19T20:14:36",
+  "sections": [
+    {
+      "key": "overnight",
+      "title": "Overnight Intelligence",
+      "icon": "🌙",
+      "answer": ":warning: Failed to generate this section: Groq chat failed after 4 retries. Last error: Error code: 413 - {'error': {'message': 'Request too large for model `openai/gpt-oss-120b` in organization `org_01k4sxx3psevhvtzxxer5mjw2q` service tier `on_demand` on tokens per minute (TPM): Limit 8000, Requested 8165, please reduce your message size and try again. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}",
+      "tool_calls": []
+    },
+    {
+      "key": "market_signals",
+      "title": "Market Signals",
+      "icon": "📈",
+      "answer": "I exceeded the tool-call budget without producing a final answer. Try rephrasing or narrowing the question.",
+      "tool_calls": [
+        {
+          "name": "web_search",
+          "args": {
+            "query": "global capital flows investor sentiment emerging trends past 24 hours"
+          },
+          "result": {
+            "results": [
+              {
+                "title": "Publications Filter",
+                "url": "https://www.iif.com/publications/publications-filter?t=Capital+Flows",
+                "snippet": "outflows, which have contributed to multiple BoP crises. However, data over the past year shows a newfound stability in portfolio flows since the reforms of March 2024, even in the face of significant external shocks.  Capital Flows Report: Capital Flows in an Age of Fragmentation June 25, 2025 Global growth slows below historical norms amid fragmented macro and policy signals. U.S. remains central to capital flows, but rising tariffs, fisca...  IIF Capital Flows Tracker: June 2025 June 09, 2025 Portfolio flows to EM rebounded to $19.2 bn in May Equity and debt flows were $8.4 bn and $10.8 bn respectively Debt flows were again driven by China,...  Views on Europe: Capital Flows to Emerging Europe: Steady Gains Amid Rising Risks June 06, 2025 In this Views on Europe, we present our [...] driven by sovereign bond issuances in Saudi Arabia to finance its fiscal deficit. However, net resident outflows, largely GCC transfers to SWFs, will still far exceed net nonresident inflows.  IIF Capital Flows: Sunshine Coming Out, But Bring an Umbrella  May 29, 2024 After bottoming out over the past two years, the momentum of nonresident capital flows to emerging markets has shifted. This in large part due to a better EM outlook relative to advanced economies, with average EM output growth likely to be higher and EM interest rate spreads likely to widen.  Weekly Insight: Vital Role of Export Credit on the Road to Net Zero January 11, 2024 While rising geopolitical tensions create challenges "
+              },
+              {
+                "title": "Global Financial Stability Report, April 2026, Chapter 2: \"Capital Flows to Emerging Markets: The Role of Global Nonbank Investors”",
+                "url": "https://www.imf.org/-/media/files/publications/gfsr/2026/april/english/ch2.pdf",
+                "snippet": "11 International Monetary Fund | April 2026 \n\nfunds, institutional-focused investment vehicles exhibit greater sensitivities to global risk; among passive funds, retail-focused vehicles tend to react more, although the difference is not statistically significant at conventional levels (Figure 2.8, panel 4). Investor redemptions in response to global risk shocks are an important driver of emerging market asset sales. Institutional investors, in particular, tend to redeem from funds with emerging market exposures during periods of heightened global risk (Figure 2.9). However, such redemptions do not always translate into additional asset sales. For example, actively managed funds serving institutional clients seem to be able to manage liquidity demands in periods of high global [...] −2.0 0.5 −1.5 −1.0 −0.5 0050 10 20 30 40 −1.0 0.2 −0.8 −0.6 −0.4 −0.2 0−0.7 0−0.6 −0.5 −0.4 −0.3 −0.2 −0.1 Emerging market economies Advanced economies Hedge funds Insurance companies Other nonbank financial intermediaries Mutual funds Pension funds Fund domicile Investment strategy Vehicle structure Investor base Nonresident (vs. Resident) Passive (vs. Active) Institutional (vs. Retail) ETFs (vs. Mutual funds) −1.5 −1 −0.5 0ETFs (399 funds) Active institutional (1,127 funds) Passive institutional (89 funds) Passive retail (157 funds) GLOBAL FINANCIAL STABILITY REPORT 12 International Monetary Fund | April 2026 [...] Amplified by vulnerabilities \n\nRisk sensitive investor base \n\nBanking sector NBFI "
+              },
+              {
+                "title": "Global Investment Trends Monitor, No. 50 - UNCTAD",
+                "url": "https://unctad.org/publication/global-investment-trends-monitor-no-50",
+                "snippet": "Investment patterns point to widening divides between developed and developing economies, growing concentration in a handful of strategic sectors and persistent weakness in projects most critical for sustainable development.\n\n#### Growth driven by financial centres\n\nMore than $140 billion of the increase in global FDI came from higher flows through global financial centres. Without these “conduit flows”, global FDI rose by only about 5%, underlining the limited recovery in underlying investment activity.\n\nIndicators of investor sentiment remained weak.\n\nGlobal Investment trends, 2025 vs 2024\nGlobal Investment trends, 2025 vs 2024\n\nThe message is clear: headline growth overstates the recovery. Policymakers should focus on reviving real investment, not just financial flows. [...] #### Developed economies pull ahead as developing countries fall behind\n\nFDI flows to developed economies jumped 43% to $728 billion in 2025, driven by Europe and financial hubs. The European Union recorded a 56% increase, supported by large cross-border acquisitions and a rebound in major economies including Germany, France and Italy.\n\nBy contrast, flows to developing economies declined by 2% to $877 billion, accounting for 55% of global FDI. Lower-income countries were hit hardest. Three quarters of least developed countries saw stagnant or declining flows.\n\nForeign direct investment  trends, by reional groups, 2025 vs 2024\nForeign direct investment  trends, by reional groups, 2025 vs 2024 [...] Fran"
+              },
+              {
+                "title": "[PDF] Changing patterns of capital flows - Bank for International Settlements",
+                "url": "https://www.bis.org/publ/cgfs66.pdf",
+                "snippet": "GFC, followed by a higher-frequency review of developments during the Covid-19 crisis of 2020. Throughout this chapter and the rest of the report, the focus is mainly on inflows to EMEs because fluctuations in gross flows have generally had larger economic and financial effects, and thus posed greater challenges, for these economies than for AEs. 1.1 Trends in aggregate flows Net versus gross flows Since the GFC, analysis of capital flows and their economic consequences has changed focus from net flows to gross flows.1 Emphasis used to be placed on net flows because they make up the financial counterpart to the current account balance. As such, they provide a convenient gauge of the impact of capital flows on a country’s real economy, asset prices and exchange rates. Net flows are also a [...] (2017)). In their replies to the survey conducted for the purpose of this report (Box 1A), central banks singled out the declining role of banks as the most important structural change in global patterns of capital flows. The growing role of asset managers, investment funds and other non-bank financial intermediaries was the second structural shift most frequently cited by survey respondents. Capital flows by type and region As a percentage of world GDP Graph 1.1 Worldwide inflows by type Worldwide inflows by region Inflows to EME regions AEs = advanced economies; EMEs = emerging markets; Financial centres = Hong Kong SAR and Singapore; Emerging Asia = CN, IN, ID, MY, PK, PH, TH; Emergi"
+              },
+              {
+                "title": "[PDF] International Capital Flow Pressures and Global Factors",
+                "url": "https://www.newyorkfed.org/medialibrary/media/research/staff_reports/sr1051.pdf",
+                "snippet": "of risk sentiment (Bekaert, Engstrom and Xu 2021), the euro V STOXX index, and the RORO (Risk-On Risk-Off) series (Chari, Stedman and Lundblad 2020). [...] 4 The EMP, Risk Sentiment, and the Global Factor International capital flow pressures are driven by global factors or advanced economy push factors and by local pull factors. A long history of studies of capital flow drivers, and the influential work of Miranda-Agrippino and Rey (2015), point to a large and important global factor particularly associated with US monetary policy and risk sentiment. Some studies point to a close relationship between US monetary policy and risk sentiment (Kalemli-¨ Ozcan 2019). Other studies keep these drivers separate and find for a reduced role of risk sentiment via the V IX as reflecting the 19 (a) Colombia (b) China (c) Thailand (d) Switzerland Figure 3: Individual Components of the EMP (2005-2020) Presented are the EMP series with colors indicating the [...] 18 3.4 Monthly EMP Series with Components, Using Reference Currencies The resulting EMP values vary across countries and time. Four specific country examples il-lustrate these points: Colombia using a variety of tools in response to international capital flow pressures; China, heavily utilizing FXI and later allowing greater contributions of exchange rate movements; Thailand as an emerging market applying FXI to avoid either appreciation or de-preciation; and Switzerland as an advanced country that has actively used all three respect"
+              }
+            ]
+          }
+        },
+        {
+          "name": "web_search",
+          "args": {
+            "query": "latest capital flows today 2026 \"past 24 hours\" market news",
+            "recency_days": 1
+          },
+          "result": {
+            "error": "_exec_web() got an unexpected keyword argument 'recency_days'"
+          }
+        },
+        {
+          "name": "web_search",
+          "args": {
+            "query": "capital flows today 2026 news"
+          },
+          "result": {
+            "results": [
+              {
+                "title": "United States Net Treasury International Capital Flows",
+                "url": "https://tradingeconomics.com/united-states/capital-flows",
+                "snippet": "| Related | Last | Previous | Unit | Reference |\n ---  --- \n| Auto Exports | 131.80 | 97.30 | Thousand | Mar 2026 |\n| Balance of Trade | -55.88 | -56.59 | USD Billion | Apr 2026 |\n| Overall Net Capital Flows | 26100.00 | 149300.00 | USD Million | Apr 2026 |\n| Crude Oil Production | 13696.00 | 13697.00 | BBL/D/1K | Mar 2026 |\n| Current Account | -190.70 | -239.10 | USD Billion | Dec 2025 |\n| Current Account to GDP | -3.60 | -4.00 | percent of GDP | Dec 2025 |\n| Exports | 327.10 | 318.78 | USD Billion | Apr 2026 |\n| Exports by Category |  |  |  |  |\n| Exports by Country |  |  |  |  |\n| External Debt | 29448233.00 | 29127909.00 | USD Million | Dec 2025 |\n| Foreign Direct Investment | 74093.00 | 83184.00 | USD Million | Dec 2025 | [...] ## \n\n| Calendar GMT | Reference | | | Actual | Previous | Consensus | TEForecast |\n ---  ---  ---  --- |\n| 2026-05-18 | 08:00 PM | Overall Net Capital Flows | Mar | $150.7B | $182.7B |  |  |\n| 2026-06-18 | 08:00 PM | Overall Net Capital Flows | Apr | $26.1B | $149.3B |  |  |\n| 2026-07-14 | 08:00 PM | Overall Net Capital Flows | May |  | $26.1B |  |  | [...] | Foreign Treasury Holdings | 9352.60 | 9348.70 | USD Billion | Apr 2026 |\n| Gold Reserves | 8133.46 | 8133.46 | Tonnes | Mar 2026 |\n| Goods Trade Balance | -83007.00 | -85118.00 | USD Million | Apr 2026 |\n| Imports | 382.98 | 375.36 | USD Billion | Apr 2026 |\n| Imports by Category |  |  |  |  |\n| Imports by Country |  |  |  |  |\n| Net Long-term TIC Flows | 103100.00 | 79900.00 | USD Million | "
+              },
+              {
+                "title": "[PDF] Capital Flows in an Age of Fragmentation - IIF",
+                "url": "https://www.iif.com/LinkClick.aspx?fileticket=W9JFSHrl3Lo%3D&portalid=&_cldee=jyUaZJT_cMQpH9Gg-B0QuODuvPoev4jHs2k_erQXlAF-vBo8Ethxfv6oyC-ltti9&recipientid=contact-40555d6ae7f0e81180d102bfc0a80172-3bf1e80f81db412aae7b44a0e6d09441&esid=2f7ed01f-c051-f011-877a-000d3a9886ab",
+                "snippet": "suggests nearshoring interest remains high. We expect strong incentives for deep economic integration with the United States to prevail, boosting inflows in the long term. In Chile, robust FDI in the mining sector amid still-elevated copper prices should support inflows. Outflows (particularly from pension funds) will remain steady as investors continue diversifying abroad. In Colombia, capital flows are expected to remain stable given improving growth and prospects of pro-market policies in 2026. FDI should moderate due to volatile commodity prices and sluggish mining and energy investment. We expect portfolio inflows to persist, driven by sizable public financing needs, although high borrowing costs underscore elevated sovereign risk. Overall, LatAm is well-positioned to face global [...] to resilience, the underlying message is one of growing differentiation across asset types, regional blocks, and policy regimes. Portfolio flows are expected to reach $242 bn in 2025 and $247 bn in 2026 (Exhibit 5), reflecting a steady but selective recovery from $220 bn in 2024 and $158 bn in 2023. These flows are being driven almost entirely by EMs outside China, where local currency debt remains the dominant asset class. Countries like Brazil, Mexico, India, and South Africa are benefiting from real yield premia and improving inflation dynamics. Hard currency flows remain subdued, a function of higher global interest rates and increased external funding costs. On the equity side, invest"
+              },
+              {
+                "title": "From Transition to Transformation: Global Capital Trends Shaping 2026 - Delphos",
+                "url": "https://delphos.co/news/blog/global-capital-trends-2026-an-emerging-markets-outlook",
+                "snippet": "Taken together, these transactions show how capital is shifting in Emerging Markets in 2026 toward assets that offer resilience, productivity, and long-term economic relevance. Africa’s growth in renewable power and data infrastructure, Asia’s investment in cross-border grids and logistics, and Latin America’s move to clean energy and private credit highlight a landscape defined by structural change. As global investors seek reliable returns in a low-growth environment, Delphos demonstrates how targeted financing and technology-enabled infrastructure can support sustainable growth and shape global capital flows for years to come. [...] Custom Featured Image\n\nAs we look toward 2026, the global financial landscape is not merely in transition; it is undergoing a fundamental transformation. The investment landscape is evolving rapidly, presenting new challenges and opportunities for investors. For investors, business owners, and financial institutions focused on Emerging Markets, understanding the currents driving this change is critical. The convergence of multipolar economic forces and a shifting geopolitical environment, along with artificial intelligence and a growing imperative for climate adaptation, is reshaping capital flows and creating new frontiers for investment. The coming year will test which investors can combine resilience with creativity, as that is where opportunity will emerge. [...] Finally, adaptation finance is moving from the periphery of policy discussion "
+              },
+              {
+                "title": "Capital Flows Tracker | IIF",
+                "url": "https://www.iif.com/Products/Capital-Flows-Tracker",
+                "snippet": "## Capital Flows Tracker\n\nThe IIF Capital Flows Tracker includes all of our current portfolio flows data (previously included in our Portfolio Flows Tracker) as well as the broader net capital flow estimates. It is released near the end of each month, and both data sets (portfolio flows and net capital flows) are available for download below. Estimates in the tracker will also feed into our quarterly EM Capital Flows Report.\n\n## Recent Trackers\n\n#### IIF Capital Flows Tracker: June 2026\n\n#### IIF Capital Flows Tracker: May 2026\n\n#### IIF Capital Flows Tracker: April 2026\n\n#### IIF Capital Flows Tracker: March 2026\n\n|  |  |\n --- |\n| Page 1 of 34 | First   Previous     2  3  4  5  6  7  8  9  10  Next   Last |\n\n#### IIF Headquarters\n\n#### IIF Middle East and Africa\n\n#### IIF Asia Pacific"
+              },
+              {
+                "title": "[PDF] Mid-Year Outlook 2026 Promise and Pressure - J.P. Morgan",
+                "url": "https://www.jpmorgan.com/content/dam/jpmorgan/documents/wealth-management/mid-year-outlook-2026.pdf",
+                "snippet": "20, 2026. We believe these changes could ultimately help build a more durable foundation for global growth and support capital flows, yet the adjustment process is likely to be uneven and marked by shocks. We offer these five pieces of advice to long-term investors to manage through the transition: • Prepare for a potential continuing rally in emerging markets Emerging markets outperformed their DM peers by 11 percentage points (ppt) in 2025 but still lagged by 500 basis points (bps) annually over the last five years. The slog for EM may be over. Structural foundations are translating into earnings delivery. In calendar year 2026, EM corporate earnings are expected to grow 46%, while EM P/E multiples have corrected to 11.8x, still below longer-term historical averages. EM sovereign bond [...] cycle can continue through the rest of 2026. After the fourth-quarter earnings reporting season (January and February 2026), the five major hyperscalers (Microsoft, Meta, Oracle, Google and Amazon) lifted their capex expectations for 2026 by $130 billion. Wall Street analysts now expect they will spend more than $650 billion together through the end of 2026, the majority of that to expand their cloud-based AI capacity. Even Oracle – which has been scrutinized by market analysts for pursuing a debt- and equity-financed capital investment strategy – recently reported $30 billion of growth in its order book, entirely from customers that are paying for their own GPUs.87 Oracle may not have t"
+              }
+            ]
+          }
+        },
+        {
+          "name": "web_search",
+          "args": {
+            "query": "June 19 2026 capital flows news",
+            "topn": 10
+          },
+          "result": {
+            "error": "_exec_web() got an unexpected keyword argument 'topn'"
+          }
+        },
+        {
+          "name": "web_search",
+          "args": {
+            "query": "June 19 2026 capital flows"
+          },
+          "result": {
+            "results": [
+              {
+                "title": "Instagram",
+                "url": "https://www.instagram.com/reel/DYzGHTHRLFr",
+                "snippet": "The global investment market continued to show resilience in Q1 2026, with investment activity moving in a positive direction despite ongoing macroeconomic and geopolitical uncertainty.  \n  \nAs investors navigate a more complex environment, larger and more liquid markets continue to attract capital, while sector and regional strategies become increasingly focused and selective. Explore our latest Global Capital Flows report by clicking the link in our bio.  \n  \nKey takeaways from the report:  \n➡️ EMEA remains the leading destination for cross-border capital, with the UK ranked first globally.   \n➡️ Office and living gained market share in EMEA, while senior living jumped from 4% to 11% of Q1 activity. [...] ➡️ Although interest rates are expected to expand over the second half of 2026, current yield spreads provide a strong income buffer, supporting investment activity.   \n➡️ Spain, Sweden and Poland saw positive GDP forecast revisions, while larger European economies were cut back.  \n  \n#ColliersIndonesia #ColliersGlobalCapitalMarkets #GlobalCapitalFlows #MarketInsights #CRE"
+              },
+              {
+                "title": "BPInsights: June 19, 2026",
+                "url": "https://bpi.com/bpinsights-june-19-2026",
+                "snippet": "they would have on firms’ capital requirements. Apart from these changes, we encourage the agencies to finalize the proposal expeditiously, so firms and the broader economy can benefit from the improved risk sensitivity in the revised standardized approach.” [...] Context. The standardized approach sets capital requirements based on standardized risk weights across banks other than those who would be mandatorily subject to the proposed Basel-based Expanded Risk-based Approach (or smaller banks who opt into the Community Bank Leverage Ratio framework). [...] Brexit and Capital Markets Stagnation.Brexit is partlyresponsiblefor the EU’s failure to integrate its capital markets, European Investment Bank President Nadia Calviño said this week. “We shouldn’t underestimate the importance of Brexit,” Calviño told Bloomberg Television on Wednesday. “London was Europe’s financial market, and after Brexit we have divided our forces.”"
+              },
+              {
+                "title": "Capital Flows - Publications Filter",
+                "url": "https://www.iif.com/publications/publications-filter?t=Capital+Flows",
+                "snippet": "#### IIF Capital Flows Tracker: June 2026\n\nNonresident portfolio flows to emerging markets turned negative again in May, reversing part of the sharp April rebound. Total EM portfolio flows fell to -$26.6 bn, compared with $70.6 bn in April and $39.2 bn in May last year.\n\n#### Current Account with Clay Lowery - Episode 146: The Tail End of a Chimera — A Midyear Macroeconomic Update\n\n#### IIF Capital Flows Tracker: May 2026\n\nNonresident portfolio flows to emerging markets rebounded sharply in April after the abrupt reversal recorded in March.\n\n#### IIF Chief Economist Dispatch: Divergence Under Constraint\n\nIn this Chief Economist Dispatch, ahead of this week s IIF Spring Meetings, I step back from our recent work to connect the forces shaping the global economy. [...] Dispatch: Divergence Under Constraint April 13, 2026 In this Chief Economist Dispatch, ahead of this week s IIF Spring Meetings, I step back from our recent work to connect the forces shaping the global economy.  IIF Capital Flows Tracker: April 2026 April 08, 2026 Nonresident portfolio flows to emerging markets deteriorated abruptly in March, marking the first full month of data after the start of the Iran war.  IIF Deep Dive: Capital Flows and Digital Trade in Emerging Markets March 12, 2026 This paper examines how the composition of international capital flows is associated with the expansion of digital exports in emerging markets.  IIF Capital Flows Tracker: March 2026 March 10, 2026 Debt remained the primary "
+              },
+              {
+                "title": "Publications Filter",
+                "url": "https://www.iif.com/Publications/publications-filter/c/Capital%20Flows%20to%20Emerging%20Markets%20Report",
+                "snippet": "| IIF Capital Flows Report: The Long Tail of the Shock May 21, 2026 In this Capital Flows Report, we mark down the global outlook materially as the Middle East shock moves beyond the initial repricing of oil and into the broader mechanics of production, trade, financing, and policy adjustment.  Capital Flows Report: Global Stability Through Internal Rotation December 04, 2025 Global growth holds near 3.1% in 2026, with internal rotation across the G3 and EM anchoring stability. Non-res flows retreat from the 2025 peak but ...  Capital Flows Report: Capital Flows in an Age of Fragmentation June 25, 2025 Global growth slows below historical norms amid fragmented macro and policy signals. U.S. remains central to capital flows, but rising tariffs, fisca...  Capital Flows Report: Riding the"
+              },
+              {
+                "title": "[PDF] Mid-Year Outlook 2026 Promise and Pressure - J.P. Morgan",
+                "url": "https://www.jpmorgan.com/content/dam/jpmorgan/documents/wealth-management/mid-year-outlook-2026.pdf",
+                "snippet": "20, 2026. We believe these changes could ultimately help build a more durable foundation for global growth and support capital flows, yet the adjustment process is likely to be uneven and marked by shocks. We offer these five pieces of advice to long-term investors to manage through the transition: • Prepare for a potential continuing rally in emerging markets Emerging markets outperformed their DM peers by 11 percentage points (ppt) in 2025 but still lagged by 500 basis points (bps) annually over the last five years. The slog for EM may be over. Structural foundations are translating into earnings delivery. In calendar year 2026, EM corporate earnings are expected to grow 46%, while EM P/E multiples have corrected to 11.8x, still below longer-term historical averages. EM sovereign bond [...] 130% over the last three years. So far, stock markets have powered through this global reorientation, and certain thematic exposures have outperformed. But the risk is that geopolitical turmoil could continue to play havoc with two inputs – oil and semiconductors – that are crucial to the global economy, financial markets and capital flows. (Rare earth metals are another critical, related vulnerability.) The strategic struggle between the United States and China, and Europe’s structural headwinds, are also critical dynamics that we consider important for investors to understand and interpret. At the same time, long-term investors have been rewarded historically for investing through geop"
+              }
+            ]
+          }
+        },
+        {
+          "name": "web_search",
+          "args": {
+            "query": "June 19 2026 \"capital flows\""
+          },
+          "result": {
+            "results": [
+              {
+                "title": "United States Net Treasury International Capital Flows",
+                "url": "https://tradingeconomics.com/united-states/capital-flows",
+                "snippet": "| Weekly Crude Oil Production | 13799.00 | 13707.00 | Thousand Barrels Per Day | Jun 2026 | [...] ## The United States recorded a capital and financial account surplus of 150700 USD Million in March of 2026. Capital Flows in the United States averaged 31617.86 USD Million from 1978 until 2026, reaching an all time high of 413685.00 USD Million in September of 2024 and a record low of -194622.00 USD Million in September of 2015. This page provides the latest reported value for - United States Net Treasury International Capital Flows - plus previous releases, historical high and low, short-term forecast and long-term prediction, economic calendar, survey consensus and news. United States Net Treasury International Capital Flows - data, historical chart, forecasts and calendar of releases - was last updated on June of 2026. [...] | Calendar GMT | Reference | | | Actual | Previous | Consensus | TEForecast |\n ---  ---  ---  --- |\n| 2026-04-15 | 08:00 PM | Overall Net Capital Flows | Feb | $184.5B | $-38.4B |  |  |\n| 2026-05-18 | 08:00 PM | Overall Net Capital Flows | Mar | $150.7B | $182.7B |  |  |\n| 2026-06-18 | 08:00 PM | Overall Net Capital Flows | Apr |  | $150.7B |  |  |"
+              },
+              {
+                "title": "Emerging Markets Capital Flows 2026: Three Structural Shifts",
+                "url": "https://delphos.co/news/blog/emerging-markets-capital-flows-2026-the-three-structural-shifts",
+                "snippet": "H1 2026 produced three structural reconfigurations in Emerging Markets capital flows 2026 that every EM sponsor preparing a capital raise in H2 needs to understand before approaching investors. This blog is written for CFOs and heads of corporate finance at established businesses in built assets, logistics, energy, and critical minerals across Sub-Saharan Africa, Latin America, and Southeast Asia. It names the three reconfigurations, identifies the geographies, sectors, and economic growth drivers each favors, and outlines the capital-raising implications for sponsors operating in each context. The framework applies to debt and equity raises from US$50MM upward. [...] ### EM Selectivity Is Rising: What Sponsors in Frontier Markets Must Prove\n\nThe IMF revised its Emerging Markets growth forecast to 3.9% for 2026, down from 4.2% in January, with EM sovereign spreads excluding China projected to increase by 100 basis points under geopolitical stress scenarios, a macro backdrop that is now the baseline for every Emerging Markets capital flows conversation in H2 2026. The IMF Geopolitical Risk Index reflects the same dynamic shaping Emerging Markets capital flows: elevated and rising geopolitical stress is no longer an exception to the operating conditions; it is the permanent condition. [...] Real assets, and power capacity in particular, have become the dominant allocation theme among capital providers in 2026. Three forces are behind this: AI infrastructure demand is creating p"
+              },
+              {
+                "title": "Capital Flows in an Age of Fragmentation",
+                "url": "https://www.iif.com/LinkClick.aspx?fileticket=W9JFSHrl3Lo%3D&portalid=&_cldee=jyUaZJT_cMQpH9Gg-B0QuODuvPoev4jHs2k_erQXlAF-vBo8Ethxfv6oyC-ltti9&recipientid=contact-40555d6ae7f0e81180d102bfc0a80172-3bf1e80f81db412aae7b44a0e6d09441&esid=2f7ed01f-c051-f011-877a-000d3a9886ab",
+                "snippet": "suggests nearshoring interest remains high. We expect strong incentives for deep economic integration with the United States to prevail, boosting inflows in the long term. In Chile, robust FDI in the mining sector amid still-elevated copper prices should support inflows. Outflows (particularly from pension funds) will remain steady as investors continue diversifying abroad. In Colombia, capital flows are expected to remain stable given improving growth and prospects of pro-market policies in 2026. FDI should moderate due to volatile commodity prices and sluggish mining and energy investment. We expect portfolio inflows to persist, driven by sizable public financing needs, although high borrowing costs underscore elevated sovereign risk. Overall, LatAm is well-positioned to face global [...] Flows plus Errors & Omissions -19 -545 -118 -418 -297 -245 Memo: Current Account Balance -487 -596 -273 -446 -313 -120 Official Flows 215 54 60 61 85 47 Source: IIF. See annexes 1 and 2 for guidance on how to interpret these data and country coverage Table 2. Emerging Markets excl. China – Capital Flows $ bn (+ = inflow of capital, - = outflow of capital) 2021 2022 2023 2024 2025f 2026f Non-resident Capital Flows 1059 688 715 862 847 910 Foreign direct investment 511 398 300 364 370 413 Equity 406 316 249 198 282 315 Debt 105 81 51 167 87 98 Portfolio investment 124 -35 138 194 172 212 Equity -50 3 37 -20 21 46 Debt 174 -39 101 214 151 166 Other investment (largely banking related flows) 4"
+              },
+              {
+                "title": "Capital Flows - Publications Filter",
+                "url": "https://www.iif.com/publications/publications-filter?t=Capital+Flows",
+                "snippet": "#### IIF Capital Flows Tracker: June 2026\n\nNonresident portfolio flows to emerging markets turned negative again in May, reversing part of the sharp April rebound. Total EM portfolio flows fell to -$26.6 bn, compared with $70.6 bn in April and $39.2 bn in May last year.\n\n#### Current Account with Clay Lowery - Episode 146: The Tail End of a Chimera — A Midyear Macroeconomic Update\n\n#### IIF Capital Flows Tracker: May 2026\n\nNonresident portfolio flows to emerging markets rebounded sharply in April after the abrupt reversal recorded in March.\n\n#### IIF Chief Economist Dispatch: Divergence Under Constraint\n\nIn this Chief Economist Dispatch, ahead of this week s IIF Spring Meetings, I step back from our recent work to connect the forces shaping the global economy. [...] Dispatch: Divergence Under Constraint April 13, 2026 In this Chief Economist Dispatch, ahead of this week s IIF Spring Meetings, I step back from our recent work to connect the forces shaping the global economy.  IIF Capital Flows Tracker: April 2026 April 08, 2026 Nonresident portfolio flows to emerging markets deteriorated abruptly in March, marking the first full month of data after the start of the Iran war.  IIF Deep Dive: Capital Flows and Digital Trade in Emerging Markets March 12, 2026 This paper examines how the composition of international capital flows is associated with the expansion of digital exports in emerging markets.  IIF Capital Flows Tracker: March 2026 March 10, 2026 Debt remained the primary "
+              },
+              {
+                "title": "Cohort Training on Exchange Rate Policies and Managing Capit al Flows",
+                "url": "https://www.imf.org/en/capacity-development/training/icdtc/schedule/jv/2026/erpjv26-26",
+                "snippet": "The program includes the following structure and time commitment:  \n     Exchange Rate Policy Course: August 17-28, 2026, in-person in Vienna.  \n     Managing Capital Flows Course: November 30-December 11, 2026, in-person in Vienna.\n\nBack to top\n\n### Course Objectives\n\nBy the end of this cohort training, participants will be able to: [...] #### Loading component...\n\n#### Loading component...\n\n# Training Program\n\n#### Loading component...\n\n#### Loading component...\n\n#### Loading component...\n\n#### Loading component...\n\n#### Loading component...\n\n#### Loading component...\n\n#### Loading component...\n\n#### Loading component...\n\n#### Loading component...\n\nInternational Monetary FundInternational Monetary Fund\n\nConnect with IMF Institute\n\n## Cohort Training on Exchange Rate Policies and Managing Capit al Flows (ERP)\n\nDeadline passed\n\nSession No.: JV 26.26\n\nLocation: Vienna, Austria\n\nDate: August 17-28, 2026 (2 weeks)\n\nDelivery Method: In-person Training\n\nPrimary Language: English\n\nInterpretation Language: Russian\n\n### Target Audience"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "key": "competitor_moves",
+      "title": "Competitor Moves",
+      "icon": "🎯",
+      "answer": ":warning: Failed to generate this section: Groq chat failed after 4 retries. Last error: Error code: 413 - {'error': {'message': 'Request too large for model `openai/gpt-oss-120b` in organization `org_01k4sxx3psevhvtzxxer5mjw2q` service tier `on_demand` on tokens per minute (TPM): Limit 8000, Requested 9809, please reduce your message size and try again. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}",
+      "tool_calls": []
+    },
+    {
+      "key": "regulatory",
+      "title": "Regulatory Shifts",
+      "icon": "⚖️",
+      "answer": "**Conclusion:** 2026 is seeing a coordinated global push that tightens AI governance, expands digital‑asset oversight, and broadens the regulatory perimeter to include fintech and non‑bank service providers.\n\n- “Regulatory change in 2026 is heavily focused on AI governance, digital assets and payments, operational resilience, and recalibrating the prudential burden on banks and other financial institutions” [Web: citrincooperman.com]  \n- “Supervisors are widening the regulatory perimeter to capture fintechs, critical third parties, and new crypto activities” [Web: citrincooperman.com]  \n- “SEC and FINRA moving toward greater accommodation of cryptocurrencies within mainstream compliance frameworks” [Web: weaver.com]  \n- “Continued pro‑digital‑assets policy … tokenization of real‑world assets … artificial intelligence usage” highlighted in the “2026 Regulatory Outlook” [Web: bbh.com]  \n- “CFTC will continue allowing futures exchanges to list new kinds of contracts, including digital‑asset derivatives, event contracts and spot purchases and sales of digital assets” [Web: clearymawatch.com]  \n\nThese developments collectively reshape the operating landscape for international financial centers, asset managers, fintech firms, and digital‑asset businesses.",
+      "tool_calls": [
+        {
+          "name": "web_search",
+          "args": {
+            "query": "2026 regulatory developments affecting international financial centers asset managers fintech digital assets"
+          },
+          "result": {
+            "results": [
+              {
+                "title": "2026 Regulatory Outlook: Re-writing the script",
+                "url": "https://www.bbh.com/content/dam/bbh/external/www/investor-services/insights/2026-regulatory-outlook/IS-2026%20Regulatory%20Outlook-ACC.pdf",
+                "snippet": "and asset managers. As we move on from circular debates about possible policies, it now appears that \n\npolicymakers in 2026 are ready to shout for lights, camera, and in particular, action. \n\nHopefully this overview helps you follow the regulatory script for 2026, at least a little. I’d welcome the \n\nopportunity to further discuss these topics with you. \n\nBest, \n\nAdrian Whelan \n\nGlobal Head of Market Intelligence \n\nBrown Brothers Harriman Investor Services \n\nadrian.whelan@bbh.com  \n\n> © Brown Brothers Harriman\n\nI 2026  5Regulating Nascent \n\n# Technology - Remaking a \n\n# Classic \n\n# Remaking a classic \n\n# As I look to 2026, discussing regulatory \n\npolicy relating to artificial intelligence \n\nand digital assets – stablecoin, \n\ncryptocurrency, and tokenized deposits [...] 1 Private funds to retail  Regulation S-P disclosures \n\n2 Continued pro digital assets policy  Marketing rule shortcomings \n\n3 Unceasing ETF innovation – dual-\n\nshare classes and eligible investment \n\nstrategies \n\nCybersecurity \n\n4 Tokenization of real-world assets  Artificial intelligence usage \n\n5 The invest act  Private fund advisors \n\nSo, while the SEC is set on its market \n\nfriendly approach in 2026, it is not like \n\nall rules have been cast aside. Even if \n\nthe bromance is to continue all asset \n\nmanagers in the US should be aware \n\nthat while scrutiny may be less intense \n\nand new rulemaking lessens – investor \n\nprotection mechanisms have long been \n\na bipartisan pillar of the capital markets \n\nin the US"
+              },
+              {
+                "title": "2026 Market, Regulatory and Technology Pressures: Asset Management Risk Insights | Weaver",
+                "url": "https://weaver.com/resources/2026-market-regulatory-and-technology-pressures-asset-management-risk-insights",
+                "snippet": "### 2026 Strategic Outlook\n\nAs asset managers move further into 2026, proactive governance and technology oversight will be essential to meeting evolving regulatory expectations and managing emerging risks. Developments over the past year signal that private fund and digital asset considerations are no longer viewed as niche areas of oversight but have become mainstream components of regulatory examinations and risk management frameworks. [...] In parallel, blockchain-based issuance-to-servicing platforms for private funds were launched in 2025, facilitating early end-to-end transactions spanning issuance, settlement and servicing. Regulatory acceptance also continued to broaden globally, with both the SEC and FINRA moving toward greater accommodation of cryptocurrencies within mainstream compliance frameworks and Luxembourg’s regulator approving a fully tokenized fund on a public blockchain.\n\nWhile near-term volatility remains a defining feature of the digital asset market, these infrastructure and regulatory developments suggest that digital assets and tokenization are becoming increasingly embedded within traditional asset management operations rather than remaining on the periphery. [...] In addition, advisers should continue to focus on allocation conflict management, valuation and liquidity practices for private and illiquid assets, and compliance with Regulation S-P’s enhanced privacy and safeguarding requirements. Firms offering private strategies to a broader investo"
+              },
+              {
+                "title": "Regulatory Changes Affecting Financial Services in 2026 - Read More",
+                "url": "https://www.citrincooperman.com/In-Focus-Resource-Center/Regulatory-Changes-Affecting-Financial-Services-in-2026",
+                "snippet": "Image 2\n\nImage 3\n\nImage 4\n\nImage 5Image 6\n\nImage 7: Practical ERP Solutions Background\n\nRegulatory change in 2026 is heavily focused on AI governance, digital assets and payments, operational resilience, and recalibrating the prudential burden on banks and other financial institutions. Supervisors are widening the regulatory perimeter to capture fintechs, critical third parties, and new crypto activities, even as some jurisdictions pursue targeted deregulation to support competitiveness and innovation.\n\n## Cross‑Cutting Regulatory Changes in 2026 [...] ## Cross‑Cutting Regulatory Changes in 2026\n\nRegulators are concentrating on four global shifts: AI governance, digital assets and payments, climate/ESG, and systemic interconnectedness between banks and non‑banks. While high‑level standards remain global, implementation is fragmenting, with the U.S., EU, UK, and Asia–Pacific taking distinct approaches to risk, growth, and innovation.\n\nAuthorities are also expanding the regulatory perimeter to cover crypto asset firms, buy‑now‑pay‑later providers, and critical third‑party tech vendors, bringing them under conduct, prudential, and resilience requirements. This shift means activities once considered “unregulated” are increasingly subject to licensing, reporting, and supervisory scrutiny.\n\n## Banking and Prudential Regulation [...] At the same time, regulators are hardening requirements around information and communication technologies (ICT) and cyber risk, building on recent outa"
+              },
+              {
+                "title": "2026 Digital Assets Regulatory Update: A Landmark 2025 . . . But ...",
+                "url": "https://www.clearymawatch.com/2026/02/2026-digital-assets-regulatory-update-a-landmark-2025-but-more-developments-on-the-horizon",
+                "snippet": "Fintechs and traditional financial institutions will likely continue to develop new products and services related to digital assets and distributed ledger technology, including new stablecoins; tokenized deposits, securities and other real world assets; new prime brokerage, cross-margining and other financing arrangements and complex derivatives and financial products tied to digital assets and tokenized instruments. [...] Notwithstanding the confirmation of the new CFTC Chairman and anticipated nominations of further Commissioners, we expect the CFTC to continue allowing futures exchanges to list new kinds of contracts, including digital asset derivatives, event contracts and spot purchases and sales of digital assets. The CFTC will also likely explore further ways for commodity brokers, swap dealers and derivatives clearing organizations to accept crypto and tokenized cash and securities as collateral for regulatory purposes, as well as for retail customers to access clearing organizations with no or more limited intermediation. [...] We expect there to be further proliferation of decentralized exchanges (DEXs) and decentralized finance (DeFi) protocols that may offer new venues to transact in both digital and traditional financial assets. In addition, there may be more venues and operators seeking to offer retail clients disintermediated access to financial markets. We may also see expanded roles for non-custodial wallet providers.\n Fintechs and traditional financial insti"
+              },
+              {
+                "title": "Digital asset regulation accelerates in 2026 | State Street",
+                "url": "https://www.statestreet.com/sa/en/insights/digital-digest-march-2026-regulations",
+                "snippet": "Learn more\n\nAbout\n\nOur Story\n\n   Our Company\n   2025 Annual Report\n   Industry Recognition\n   Office Locations\n\nOur People\n\n   Our Team\n   Leadership\n   Careers\n\nOur Impact\n\n   Sustainability\n   Operating Responsibly\n   Inclusion and Diversity\n   Sustainability Reports, Policies and Disclosures\n   State Street Foundation\n\n## Insights\n\n# Digital asset regulation accelerates in 2026\n\nDigital Digest March 2026\n\nPreface\n\nIn this issue\n\nDigital assets through an institutional lens: A conversation with Angus Fletcher\n\nSEC regulation of tokenized securities: Implications for asset managers and owners\n\nDigital asset regulation accelerates in 2026\n\nImage 4: Digital asset regulation march 2026\n\nMarch 2026\n\nJustin McCormackHead of Legal, Digital Assets Solutions [...] Justin McCormackHead of Legal, Digital Assets Solutions\n\nFor much of the past decade, the global regulatory posture toward digital assets has been defined by uneven progress: clear rules in some markets, uncertainty (and frequent enforcement-by-analogy) in others. In 2025, the tone shifted meaningfully. What changed was not that regulators “solved” digital assets. Rather, more jurisdictions moved from “what” to “how.”\n\nThree key themes repeatedly surfaced: (i) clearer licensing and conduct expectations for intermediaries; (ii) more explicit approaches to digital money (stablecoins, tokenized deposits, and related settlement mechanisms); and (iii) continued efforts to align global standards on prudential treatment and finan"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "key": "performance",
+      "title": "Performance Alerts",
+      "icon": "📊",
+      "answer": "The most urgent issues are two initiatives lagging behind schedule and all five core KPIs falling short of their Q2 2026 targets.\n\n- **CSO Intelligence Dashboard – “Behind”** (30 % progress, vendor change caused a 6‑week delay; new delivery date 15 Sep 2026) [Doc: initiative_status_report_q2_2026.pdf, p.1]  \n- **Core Registry Upgrade – “Behind”** (15 % progress, procurement extended by security review; revised kick‑off 1 Aug 2026) [Doc: initiative_status_report_q2_2026.pdf, p.1]  \n- **Digital Asset Licensing Fast‑Track – “At Risk”** (45 % progress, consultant delivery delayed 3 weeks; SLA still pending) [Doc: initiative_status_report_q2_2026.pdf, p.1]  \n- **Talent Attraction Programme – “At Risk”** (40 % progress, visa processing delays averaging 47 days) [Doc: initiative_status_report_q2_2026.pdf, p.1]  \n- **KPIs off‑track** – all five metrics below target: New Entity Registrations 356 vs 380; Assets Under Management USD 171 bn vs 175 bn; Licensed Fintech Firms 109 vs 120; Digital Asset Licenses 28 vs 35; Workforce 1,310 FTE vs 1,350 [Doc: board_strategy_memo_q2_2026.pdf, p.1]",
+      "tool_calls": [
+        {
+          "name": "rag_search",
+          "args": {
+            "query": "initiative status behind plan KPI off-track performance issues"
+          },
+          "result": {
+            "results": [
+              {
+                "source": "initiative_status_report_q2_2026.pdf",
+                "page": 1,
+                "score": 0.735,
+                "text": "Strategic Initiative Status Report – Q2 2026\nProgress Tracking: CSO Priority Initiatives\nDate: 12 June 2026\nClassification: Internal\nPrepared by: Strategy Office\nReview Cycle: Quarterly\n1. Initiative Portfolio Summary\nInitiative\nOwner\nBudget (USD)\nProgress\nStatus\nFinancial Innovation Hub Phase 2\nInnovation Division\n4,200,000\n68%\nOn Track\nDigital Asset Licensing Fast-Track\nRegulatory Affairs\n850,000\n45%\nAt Risk\nESG Reporting Framework\nSustainability\n310,000\n80%\nOn Track\nCSO Intelligence Dashboard\nTechnology\n620,000\n30%\nBehind\nGCC Bilateral Agreements\nExternal Affairs\n180,000\n55%\nOn Track\nTalent Attraction Programme\nHR\n1,100,000\n40%\nAt Risk\nCore Registry Upgrade\nTechnology\n2,900,000\n15%\nBehind\n2. Initiatives Requiring Leadership Attention\nTwo initiatives are currently flagged as 'At Risk' and two as 'Behind Schedule'. The CSO's attention\nis requested on the following:\n Digital Asset Licensing Fast-Track (At Risk): Consultant delivery delayed by 3 weeks. Revised\nSLA from legal team still outstanding. Risk of missing the Q3 2026 go-live target which would\ncede first-mover advantage to DIFC."
+              },
+              {
+                "source": "initiative_status_report_q2_2026.pdf",
+                "page": 1,
+                "score": 0.724,
+                "text": "Fast-Track (At Risk): Consultant delivery delayed by 3 weeks. Revised\nSLA from legal team still outstanding. Risk of missing the Q3 2026 go-live target which would\ncede first-mover advantage to DIFC.\n Talent Attraction Programme (At Risk): Visa processing delays averaging 47 days are deterring\nsenior international candidates. Escalation to immigration authority required at ministerial level.\n CSO Intelligence Dashboard (Behind): Technology vendor change mid-project caused a\n6-week delay. New delivery date: 15 September 2026. Contingency: manual reporting continues.\n Core Registry Upgrade (Behind): Procurement process extended due to additional security\nreview requirements. Revised kick-off: 1 August 2026.\n3. Completed Milestones – Q2 2026\n Financial Innovation Hub: Three anchor tenants signed (global payments firm, regtech startup,\nIslamic fintech). Opening ceremony scheduled September 2026.\n ESG Reporting Framework: Draft framework circulated to 45 licensed entities; 38 responses\nreceived. Final version due July 2026.\n GCC Bilateral Agreements: MOU signed with Bahrain Economic Development Board;\ndiscussions advanced with Kuwait CMA.\n4. Budget Utilization"
+              },
+              {
+                "source": "initiative_status_report_q2_2026.pdf",
+                "page": 2,
+                "score": 0.667,
+                "text": "Initiative\nApproved Budget\nSpent to Date\nRemaining\nForecast at Completion\nInnovation Hub Ph.2\n$4,200,000\n$2,856,000\n$1,344,000\n$4,200,000\nDigital Asset Fast-Track\n$850,000\n$382,500\n$467,500\n$920,000\nESG Framework\n$310,000\n$248,000\n$62,000\n$310,000\nCSO Dashboard\n$620,000\n$186,000\n$434,000\n$680,000\nRegistry Upgrade\n$2,900,000\n$435,000\n$2,465,000\n$3,100,000"
+              },
+              {
+                "source": "board_strategy_memo_q2_2026.pdf",
+                "page": 1,
+                "score": 0.636,
+                "text": "nchor tenants confirmed.\n Strengthen ESG reporting requirements in alignment with ISSB standards.\n Recruit 12 senior regulatory and compliance professionals by end of Q3 2026.\n3. Market Environment\nGlobal capital markets remain cautious amid persistent inflation in Western economies, while\nGCC-based investors are increasingly reallocating toward regional financial centers. Our center has\nrecorded a 14% year-on-year increase in new entity registrations, driven primarily by fintech and\nasset management firms. The digital assets segment grew 28% in licensed entities compared to Q2\n2025.\n4. Key Performance Indicators\nKPI\nQ2 2025\nQ1 2026\nQ2 2026\nTarget\nNew Entity Registrations\n312\n358\n356\n380\nAssets Under Management (USD bn)\n148\n162\n171\n175\nLicensed Fintech Firms\n84\n97\n109\n120\nDigital Asset Licenses\n12\n19\n28\n35\nWorkforce (FTE)\n1,240\n1,285\n1,310\n1,350\n5. Risk Flags"
+              },
+              {
+                "source": "board_strategy_memo_q2_2026.pdf",
+                "page": 2,
+                "score": 0.625,
+                "text": " Regulatory arbitrage risk: Singapore MAS proposed a 30-day fast-track license for crypto\ncustodians — response required.\n Talent pipeline: Senior compliance roles remain unfilled for an average of 97 days.\n Technology infrastructure: Core registry system requires upgrade before Q4 2026 to support\nprojected volume."
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "key": "risks",
+      "title": "Risk Indicators",
+      "icon": "⚠️",
+      "answer": "**Conclusion:** Our internal risk registers highlight several at‑risk initiatives and infrastructure gaps, while external intelligence points to evolving regulatory mandates, heightened Middle‑East geopolitical tension, and broader market volatility that could affect the center’s stability.\n\n- **Internal risk flags:** Regulatory arbitrage risk – “Singapore MAS proposed a 30‑day fast‑track license for crypto custodians — response required” [Doc: board_strategy_memo_q2_2026.pdf, p.2]; Talent pipeline – “Senior compliance roles remain unfilled for an average of 97 days” [Doc: board_strategy_memo_q2_2026.pdf, p.2]; Technology infrastructure – “Core registry system requires upgrade before Q4 2026 to support projected volume” [Doc: board_strategy_memo_q2_2026.pdf, p.2]; Digital Asset Licensing Fast‑Track – “Consultant delivery delayed by 3 weeks… Risk of missing the Q3 2026 go‑live target” [Doc: initiative_status_report_q2_2026.pdf, p.1]; Talent Attraction Programme – “Visa processing delays averaging 47 days are deterring senior international candidates” [Doc: initiative_status_report_q2_2026.pdf, p.1]; CSO Intelligence Dashboard – “Technology vendor change mid‑project caused a 6‑week delay” [Doc: initiative_status_report_q2_2026.pdf, p.1]; Core Registry Upgrade – “Procurement process extended due to additional security review requirements” [Doc: initiative_status_report_q2_2026.pdf, p.1].\n\n- **External regulatory developments to monitor:** ISSB S1/S2 Sustainability Disclosures – “Deadline 30 Sep 2026 — High — Draft guidance published” [Doc: regulatory_compliance_summary_2026.pdf, p.1]; FATF AML/CFT Framework Update – “Deadline 15 Aug 2026 — High — Training underway” [Doc: regulatory_compliance_summary_2026.pdf, p.1]; Digital Asset Custody Rules v2.0 – “Deadline 1 Oct 2026 — Medium — Consultation open” [Doc: regulatory_compliance_summary_2026.pdf, p.1]; Cross‑Border Payment Reporting – “Deadline 31 Jul 2026 — Medium — Mapping in progress” [Doc: regulatory_compliance_summary_2026.pdf, p.1]; Data Residency Requirements – “Deadline 1 Jan 2027 — High — IT scoping started” [Doc: regulatory_compliance_summary_2026.pdf, p.1].\n\n- **Geopolitical risks:** “Geopolitical tensions remain a key variable as any escalation could introduce periods of short‑term volatility and disrupt market sentiment” [Web: ssga.com]; “Heightened geopolitical tensions are an increasing focus for financial regulators and central banks globally” [Web: rba.gov.au]; “The escalation of geopolitical tensions in the Middle East has triggered a sharp sell‑off in emerging market currencies” [Web: imf.org].\n\n- **Market‑related risks:** “GCC equity markets remain sensitive to headline risk—particularly around energy prices and regional logistics” [Web: ssga.com]; “Increased uncertainty in financial markets… could undermine investor confidence and lead to heightened risk aversion” [Web: rba.gov.au]; “Sharp increase in risk premiums… triggered by dollar appreciation, rising global interest rates, or equity downturns” [Web: imf.org].",
+      "tool_calls": [
+        {
+          "name": "rag_search",
+          "args": {
+            "query": "risk register internal documents flagged risks"
+          },
+          "result": {
+            "results": [
+              {
+                "source": "board_strategy_memo_q2_2026.pdf",
+                "page": 2,
+                "score": 0.62,
+                "text": " Regulatory arbitrage risk: Singapore MAS proposed a 30-day fast-track license for crypto\ncustodians — response required.\n Talent pipeline: Senior compliance roles remain unfilled for an average of 97 days.\n Technology infrastructure: Core registry system requires upgrade before Q4 2026 to support\nprojected volume."
+              },
+              {
+                "source": "initiative_status_report_q2_2026.pdf",
+                "page": 1,
+                "score": 0.619,
+                "text": "Fast-Track (At Risk): Consultant delivery delayed by 3 weeks. Revised\nSLA from legal team still outstanding. Risk of missing the Q3 2026 go-live target which would\ncede first-mover advantage to DIFC.\n Talent Attraction Programme (At Risk): Visa processing delays averaging 47 days are deterring\nsenior international candidates. Escalation to immigration authority required at ministerial level.\n CSO Intelligence Dashboard (Behind): Technology vendor change mid-project caused a\n6-week delay. New delivery date: 15 September 2026. Contingency: manual reporting continues.\n Core Registry Upgrade (Behind): Procurement process extended due to additional security\nreview requirements. Revised kick-off: 1 August 2026.\n3. Completed Milestones – Q2 2026\n Financial Innovation Hub: Three anchor tenants signed (global payments firm, regtech startup,\nIslamic fintech). Opening ceremony scheduled September 2026.\n ESG Reporting Framework: Draft framework circulated to 45 licensed entities; 38 responses\nreceived. Final version due July 2026.\n GCC Bilateral Agreements: MOU signed with Bahrain Economic Development Board;\ndiscussions advanced with Kuwait CMA.\n4. Budget Utilization"
+              },
+              {
+                "source": "initiative_status_report_q2_2026.pdf",
+                "page": 1,
+                "score": 0.612,
+                "text": "Strategic Initiative Status Report – Q2 2026\nProgress Tracking: CSO Priority Initiatives\nDate: 12 June 2026\nClassification: Internal\nPrepared by: Strategy Office\nReview Cycle: Quarterly\n1. Initiative Portfolio Summary\nInitiative\nOwner\nBudget (USD)\nProgress\nStatus\nFinancial Innovation Hub Phase 2\nInnovation Division\n4,200,000\n68%\nOn Track\nDigital Asset Licensing Fast-Track\nRegulatory Affairs\n850,000\n45%\nAt Risk\nESG Reporting Framework\nSustainability\n310,000\n80%\nOn Track\nCSO Intelligence Dashboard\nTechnology\n620,000\n30%\nBehind\nGCC Bilateral Agreements\nExternal Affairs\n180,000\n55%\nOn Track\nTalent Attraction Programme\nHR\n1,100,000\n40%\nAt Risk\nCore Registry Upgrade\nTechnology\n2,900,000\n15%\nBehind\n2. Initiatives Requiring Leadership Attention\nTwo initiatives are currently flagged as 'At Risk' and two as 'Behind Schedule'. The CSO's attention\nis requested on the following:\n Digital Asset Licensing Fast-Track (At Risk): Consultant delivery delayed by 3 weeks. Revised\nSLA from legal team still outstanding. Risk of missing the Q3 2026 go-live target which would\ncede first-mover advantage to DIFC."
+              },
+              {
+                "source": "regulatory_compliance_summary_2026.pdf",
+                "page": 1,
+                "score": 0.609,
+                "text": "Regulatory Compliance Summary – H1 2026\nPolicy Alignment, Upcoming Changes & Action Items\nDate: 8 June 2026\nClassification: Restricted\nPrepared by: Chief Compliance Officer\nScope: All licensed entities\n1. Overview\nThis summary covers the key regulatory developments affecting our center and its licensed entities\nduring H1 2026. Three major policy frameworks are under active review and will require formal\nresponse by the end of Q3 2026. All entity-facing communications have been drafted and are\npending CSO sign-off.\n2. Regulatory Calendar – Upcoming Deadlines\nRegulation\nJurisdiction\nDeadline\nImpact\nStatus\nISSB S1/S2 Sustainability Disclosures\nGlobal / Local Adoption\n30 Sep 2026\nHigh\nDraft guidance published\nAML/CFT Framework Update (FATF)\nAll licensed entities\n15 Aug 2026\nHigh\nTraining underway\nDigital Asset Custody Rules v2.0\nInternal\n1 Oct 2026\nMedium\nConsultation open\nCross-Border Payment Reporting\nGCC\n31 Jul 2026\nMedium\nMapping in progress\nData Residency Requirements\nLocal\n1 Jan 2027\nHigh\nIT scoping started\n3. Key Regulatory Developments\nThe Financial Action Task Force (FATF) updated its Recommendation 16 ('Travel Rule') guidance in"
+              },
+              {
+                "source": "board_strategy_memo_q2_2026.pdf",
+                "page": 1,
+                "score": 0.592,
+                "text": "nchor tenants confirmed.\n Strengthen ESG reporting requirements in alignment with ISSB standards.\n Recruit 12 senior regulatory and compliance professionals by end of Q3 2026.\n3. Market Environment\nGlobal capital markets remain cautious amid persistent inflation in Western economies, while\nGCC-based investors are increasingly reallocating toward regional financial centers. Our center has\nrecorded a 14% year-on-year increase in new entity registrations, driven primarily by fintech and\nasset management firms. The digital assets segment grew 28% in licensed entities compared to Q2\n2025.\n4. Key Performance Indicators\nKPI\nQ2 2025\nQ1 2026\nQ2 2026\nTarget\nNew Entity Registrations\n312\n358\n356\n380\nAssets Under Management (USD bn)\n148\n162\n171\n175\nLicensed Fintech Firms\n84\n97\n109\n120\nDigital Asset Licenses\n12\n19\n28\n35\nWorkforce (FTE)\n1,240\n1,285\n1,310\n1,350\n5. Risk Flags"
+              }
+            ]
+          }
+        },
+        {
+          "name": "web_search",
+          "args": {
+            "query": "regulatory risks financial centers 2026 geopolitical tensions market volatility GCC financial center"
+          },
+          "result": {
+            "results": [
+              {
+                "title": "The path ahead for GCC equities | State Street",
+                "url": "https://www.ssga.com/no/en_gb/institutional/insights/the-path-ahead-for-gcc-equities",
+                "snippet": "The region continues to demonstrate economic resilience: the GCC is expected to be relatively less impacted by global trade frictions and enjoy relatively robust growth, with governments in the region working on broadening trade and investment relationships.  \n  \nHowever, several factors could challenge GCC equities in 2026. Geopolitical tensions remain a key variable as any escalation could introduce periods of short term volatility and disrupt market sentiment. [...] Geopolitical conflicts typically lead to heightened volatility and short term drawdowns in equity markets, while history suggests they have limited impact on long term returns unless they evolve into sustained macroeconomic shocks. In the current environment, GCC equity markets remain sensitive to headline risk—particularly around energy prices and regional logistics—but have so far demonstrated relative resilience supported by strong fiscal positions and high oil revenues. [...] Historically, GCC equity performance has been closely linked to energy prices, reflecting the region’s role as a major oil and gas producer. Over the past decade, however, this relationship has moderated. The MSCI GCC Countries Combined Index—which captures approximately 85% of free-float-adjusted market capitalization across the six member states—illustrates a pattern of resilience and steadier returns, even amid volatile energy markets. This decoupling has become more evident in early 2026."
+              },
+              {
+                "title": "Geopolitical Risk and Financial Stability | Bulletin – June 2026 | RBA",
+                "url": "https://www.rba.gov.au/publications/bulletin/2026/jun/geopolitical-risk-and-financial-stability.html",
+                "snippet": "## Introduction\n\nHeightened geopolitical tensions are an increasing focus for financial regulators and central banks globally.1 Recent conflicts in the Middle East and Ukraine, and intensifying cyber-attacks by state-sponsored actors, have also prompted financial institutions to increase their focus on geopolitical risks. In Australia, the Council of Financial Regulators (CFR) is working with industry to ensure the financial system is prepared for a range of geopolitical scenarios. [...] Increased uncertainty in financial markets, which could undermine investor confidence and lead to heightened risk aversion. This may result in increased market volatility, disorderly price declines and a surge in trading volumes, potentially testing the capacity of financial market infrastructure.\n   Disruptions in access to funding, impacting financial institutions that rely on international markets. Sovereign bond spreads may also widen in response to expectations of higher fiscal spending and increased risk premia, making it more difficult for governments to access capital in a time of need. [...] ### Political risks\n\nPolitical risks relate to the potential impact of international policy actions, including financial sanctions, capital controls and offshore asset seizures. Heightened geopolitical tension could result in broad-based or targeted sanctions being imposed rapidly by multiple jurisdictions. Differences in the scope, timing and design of sanctions regimes can create operational co"
+              },
+              {
+                "title": "[PDF] Geopolitical Conflict and Financial Market Reactions",
+                "url": "https://mpra.ub.uni-muenchen.de/129143/1/MPRA_paper_129143.pdf",
+                "snippet": "in capital movement and fluctuations in government bond markets (Curatola-Melo & Guimaraes, 2026). The study adopts a forward-looking geopolitical conflict framework involving the United States, Israel, and Iran during 2026 to examine potential financial market reactions under heightened geopolitical uncertainty. The Middle East holds vital importance because it controls fundamental routes for energy distribution, which powers the entire planet. The Strait of Hormuz serves as a critical chokepoint since it controls access to maritime routes through which a major portion of global oil shipments must move. The global oil markets react immediately to any disturbance or danger that threatens this transportation route. Regional tensions disrupt energy supply chains, which create energy price [...] disrupt energy supply chains, which create energy price fluctuations and lead to economic uncertainty throughout the world (Jazeera, 2026). The financial markets show their initial response to geopolitical tensions through oil price movements, which serve as primary financial indicators. The markets begin to monitor two key elements when conflicts arise in important oil-producing nations: the potential production disruptions and the routes that carry energy supplies. The expectation itself leads to a major increase in oil prices (The Economist, 2026). The global economy experiences effects from rising oil prices, which impact inflation rates, transportation expenses, and economic develop"
+              },
+              {
+                "title": "The Institute of International Finance > Events > Meeting",
+                "url": "https://www.iif.com/Events/Meeting/meetingid/ebae923d-7949-f111-bec7-000d3a9ea5eb",
+                "snippet": "The Institute of International Finance\n\n# 2026 GCC Investor Trip\n\nThe IIF GCC Investor Trip will bring together private-sector leaders and officials from across the gulf region to assess the region's economic and political outlook amid the ongoing conflict with Iran. Discussions will focus on how the ongoing conflict with Iran is reshaping macroeconomic trajectories for 2026 and beyond, including growth, fiscal balances, and capital flows, as well as policy responses to rising geopolitical risks and oil market volatility."
+              },
+              {
+                "title": "[PDF] Global Financial Stability Report, April 2026, Chapter 1",
+                "url": "https://www.imf.org/-/media/files/publications/gfsr/2026/april/english/ch1.pdf",
+                "snippet": "rapid repricing. The escalation of geopolitical tensions in the Middle East has triggered a sharp sell-off in emerging market currencies, reversing part of the strong rally since early 2025. Relative foreign exchange perfor-mance since the start of the conflict has increasingly reflected differences in energy exposure. Currencies of more oil-import-dependent economies have gener-ally underperformed as markets price in terms of trade pressures and higher inflation risks (Figure 1.6, panel  3), while several earlier outperformers have experienced sharper reversals amid positioning [...] Emerging market assets retrace some recent strong gains amid escalating geopolitical tensions in the Middle East ... [...] quintiles of VIX (Figure 1.5, panel 4). This suggests investors’ use of derivatives to obtain leverage could leave emerging markets more vulnerable to global shocks than in the past. Ahead of the outbreak of the conflict in the Middle East, global investors’ desire for greater diversification and improvements in macroeconomic fundamentals supported appetite for emerging market assets, raising valuations and compressing risk premiums across interest rates, corporate credit, and equities (Figure 1.6, panel 1). A sharp increase in risk premiums is his-torically commonplace under the current conditions, triggered by dollar appreciation, rising global interest rates, or equity downturns (Figure 1.6, panel 2), rais-ing the scope for rapid repricing. The escalation of geopolitical "
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

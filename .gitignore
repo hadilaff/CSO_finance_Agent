@@ -1,0 +1,11 @@
+.env
+__pycache__/
+*.pyc
+*.pyo
+.chroma/
+.venv/
+venv/
+.streamlit/secrets.toml
+*.egg-info/
+.ipynb_checkpoints/
+.DS_Store
