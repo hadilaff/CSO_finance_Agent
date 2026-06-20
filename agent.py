@@ -144,7 +144,7 @@ TOOLS = [gtypes.Tool(function_declarations=[_RAG_DECL, _WEB_DECL, _DECK_DECL])]
 # ---------- Tool execution ----------
 
 def _exec_rag(query: str) -> dict:
-    hits = rag_search_fn(query, k=3)
+    hits = rag_search_fn(query, k=5)
     if not hits:
         return {"results": [], "note": "No documents indexed or no matches found."}
     return {
