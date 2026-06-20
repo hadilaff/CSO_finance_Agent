@@ -1,22 +1,44 @@
-"""Voice I/O: Whisper transcription via Groq + edge-tts speech synthesis."""
+"""Voice I/O: audio transcription via Gemini Flash + edge-tts speech synthesis."""
 from __future__ import annotations
 
 import asyncio
 import re
 
-from config import get_groq_client
+from google.genai import types as gtypes
 
-WHISPER_MODEL = "whisper-large-v3"
+from config import AUDIO_MODEL, get_gemini_client
+
 DEFAULT_TTS_VOICE = "en-US-AriaNeural"  # clean American English female
+
+_MIME_BY_EXT = {
+    ".wav":  "audio/wav",
+    ".mp3":  "audio/mp3",
+    ".m4a":  "audio/mp4",
+    ".webm": "audio/webm",
+    ".ogg":  "audio/ogg",
+    ".flac": "audio/flac",
+}
+
+
+def _mime_for(filename: str) -> str:
+    lower = filename.lower()
+    for ext, mime in _MIME_BY_EXT.items():
+        if lower.endswith(ext):
+            return mime
+    return "audio/wav"
 
 
 def transcribe(audio_bytes: bytes, filename: str = "audio.wav") -> str:
-    """Send audio bytes to Groq Whisper and return the transcript."""
-    client = get_groq_client()
-    resp = client.audio.transcriptions.create(
-        file=(filename, audio_bytes),
-        model=WHISPER_MODEL,
-        language="en",
+    """Send audio bytes to Gemini Flash and return the transcript."""
+    client = get_gemini_client()
+    audio_part = gtypes.Part.from_bytes(data=audio_bytes, mime_type=_mime_for(filename))
+    prompt_part = gtypes.Part(
+        text="Transcribe this audio exactly. Return only the transcript, no preamble, no commentary."
+    )
+    resp = client.models.generate_content(
+        model=AUDIO_MODEL,
+        contents=[gtypes.Content(role="user", parts=[prompt_part, audio_part])],
+        config=gtypes.GenerateContentConfig(temperature=0.0),
     )
     return (resp.text or "").strip()
 

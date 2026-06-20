@@ -1,11 +1,17 @@
-"""Groq agent loop with rag_search + web_search tool calling."""
+"""Gemini agent loop with rag_search + web_search + generate_deck tool calling."""
 from __future__ import annotations
 
-import json
-import time
 import logging
+import time
 
-from config import CHAT_MODEL, get_groq_client, groq_pool_size, rotate_groq_client
+from google.genai import types as gtypes
+
+from config import (
+    CHAT_MODEL,
+    gemini_pool_size,
+    get_gemini_client,
+    rotate_gemini_client,
+)
 from deck import store_deck
 from rag import search as rag_search_fn
 from search import web_search as web_search_fn
@@ -40,109 +46,105 @@ DECK RULES (McKinsey-style — when using generate_deck):
 - After generate_deck returns, tell the user the deck is ready to download — do not repeat the slide content."""
 
 
-# ---------- Tool definitions (Groq/OpenAI format) ----------
+# ---------- Tool declarations (Gemini format) ----------
 
-TOOLS = [
-    {
-        "type": "function",
-        "function": {
-            "name": "rag_search",
-            "description": (
-                "Search the CSO's uploaded internal documents (institutional knowledge). "
-                "Returns the most relevant text chunks with source filenames and page numbers."
+_RAG_DECL = gtypes.FunctionDeclaration(
+    name="rag_search",
+    description=(
+        "Search the CSO's uploaded internal documents (institutional knowledge). "
+        "Returns the most relevant text chunks with source filenames and page numbers."
+    ),
+    parameters=gtypes.Schema(
+        type=gtypes.Type.OBJECT,
+        properties={
+            "query": gtypes.Schema(
+                type=gtypes.Type.STRING,
+                description="The search query. Use specific terms; rephrase for better recall if needed.",
             ),
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "query": {
-                        "type": "string",
-                        "description": "The search query. Use specific terms; rephrase for better recall if needed.",
-                    }
-                },
-                "required": ["query"],
-            },
         },
-    },
-    {
-        "type": "function",
-        "function": {
-            "name": "web_search",
-            "description": (
-                "Search the live web for external intelligence: competitor activity, regulatory updates, "
-                "market news, capital flows. Returns titles, URLs, and snippets."
+        required=["query"],
+    ),
+)
+
+_WEB_DECL = gtypes.FunctionDeclaration(
+    name="web_search",
+    description=(
+        "Search the live web for external intelligence: competitor activity, regulatory updates, "
+        "market news, capital flows. Returns titles, URLs, and snippets."
+    ),
+    parameters=gtypes.Schema(
+        type=gtypes.Type.OBJECT,
+        properties={
+            "query": gtypes.Schema(
+                type=gtypes.Type.STRING,
+                description="The web search query.",
             ),
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "query": {
-                        "type": "string",
-                        "description": "The web search query.",
-                    }
-                },
-                "required": ["query"],
-            },
         },
-    },
-    {
-        "type": "function",
-        "function": {
-            "name": "generate_deck",
-            "description": (
-                "Create a PowerPoint (.pptx) deck from a structured spec. Use ONLY after gathering "
-                "facts via rag_search / web_search. The UI shows the user a download button when this returns."
+        required=["query"],
+    ),
+)
+
+_DECK_DECL = gtypes.FunctionDeclaration(
+    name="generate_deck",
+    description=(
+        "Create a PowerPoint (.pptx) deck from a structured spec. Use ONLY after gathering "
+        "facts via rag_search / web_search. The UI shows the user a download button when this returns."
+    ),
+    parameters=gtypes.Schema(
+        type=gtypes.Type.OBJECT,
+        properties={
+            "title":    gtypes.Schema(type=gtypes.Type.STRING, description="Deck title (cover slide)."),
+            "subtitle": gtypes.Schema(type=gtypes.Type.STRING, description="Optional cover subtitle."),
+            "filename": gtypes.Schema(type=gtypes.Type.STRING, description="Optional output filename (without extension)."),
+            "slides": gtypes.Schema(
+                type=gtypes.Type.ARRAY,
+                description="Ordered list of content slides after the cover.",
+                items=gtypes.Schema(
+                    type=gtypes.Type.OBJECT,
+                    properties={
+                        "type":     gtypes.Schema(type=gtypes.Type.STRING, description="One of: bullets, table, chart, title."),
+                        "title":    gtypes.Schema(type=gtypes.Type.STRING, description="Action title — a takeaway sentence."),
+                        "lead_in":  gtypes.Schema(type=gtypes.Type.STRING, description="Optional one-sentence framing."),
+                        "source":   gtypes.Schema(type=gtypes.Type.STRING, description="Source line shown at bottom (document + page or domain + date)."),
+                        "subtitle": gtypes.Schema(type=gtypes.Type.STRING),
+                        "bullets":  gtypes.Schema(type=gtypes.Type.ARRAY, items=gtypes.Schema(type=gtypes.Type.STRING)),
+                        "headers":  gtypes.Schema(type=gtypes.Type.ARRAY, items=gtypes.Schema(type=gtypes.Type.STRING)),
+                        "rows": gtypes.Schema(
+                            type=gtypes.Type.ARRAY,
+                            items=gtypes.Schema(
+                                type=gtypes.Type.ARRAY,
+                                items=gtypes.Schema(type=gtypes.Type.STRING),
+                            ),
+                        ),
+                        "categories": gtypes.Schema(type=gtypes.Type.ARRAY, items=gtypes.Schema(type=gtypes.Type.STRING)),
+                        "series": gtypes.Schema(
+                            type=gtypes.Type.ARRAY,
+                            items=gtypes.Schema(
+                                type=gtypes.Type.OBJECT,
+                                properties={
+                                    "name":   gtypes.Schema(type=gtypes.Type.STRING),
+                                    "values": gtypes.Schema(type=gtypes.Type.ARRAY, items=gtypes.Schema(type=gtypes.Type.NUMBER)),
+                                },
+                                required=["name", "values"],
+                            ),
+                        ),
+                        "chart_type": gtypes.Schema(type=gtypes.Type.STRING, description="bar, column, hbar, line, or pie."),
+                    },
+                    required=["type", "title"],
+                ),
             ),
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "title":    {"type": "string", "description": "Deck title (cover slide)."},
-                    "subtitle": {"type": "string", "description": "Optional cover subtitle (e.g. reporting period)."},
-                    "filename": {"type": "string", "description": "Optional output filename (without extension)."},
-                    "slides": {
-                        "type": "array",
-                        "description": "Ordered list of content slides after the cover.",
-                        "items": {
-                            "type": "object",
-                            "properties": {
-                                "type":  {"type": "string", "enum": ["bullets", "table", "chart", "title"]},
-                                "title": {"type": "string", "description": "Action title — a takeaway sentence, not a topic label."},
-                                "lead_in":    {"type": "string", "description": "Optional one-sentence framing shown italic below the title."},
-                                "source":     {"type": "string", "description": "Source line shown at the bottom of the slide (document + page, or domain + date)."},
-                                "subtitle":   {"type": "string"},
-                                "bullets":    {"type": "array", "items": {"type": "string"}},
-                                "headers":    {"type": "array", "items": {"type": "string"}},
-                                "rows": {
-                                    "type": "array",
-                                    "items": {"type": "array", "items": {"type": "string"}}
-                                },
-                                "categories": {"type": "array", "items": {"type": "string"}},
-                                "series": {
-                                    "type": "array",
-                                    "items": {
-                                        "type": "object",
-                                        "properties": {
-                                            "name":   {"type": "string"},
-                                            "values": {"type": "array", "items": {"type": "number"}}
-                                        },
-                                        "required": ["name", "values"]
-                                    }
-                                },
-                                "chart_type": {"type": "string", "enum": ["bar", "column", "hbar", "line", "pie"]}
-                            },
-                            "required": ["type", "title"]
-                        }
-                    }
-                },
-                "required": ["title", "slides"]
-            }
-        }
-    },
-]
+        },
+        required=["title", "slides"],
+    ),
+)
+
+TOOLS = [gtypes.Tool(function_declarations=[_RAG_DECL, _WEB_DECL, _DECK_DECL])]
 
 
 # ---------- Tool execution ----------
 
 def _exec_rag(query: str) -> dict:
-    hits = rag_search_fn(query, k=5)
+    hits = rag_search_fn(query, k=3)
     if not hits:
         return {"results": [], "note": "No documents indexed or no matches found."}
     return {
@@ -151,7 +153,7 @@ def _exec_rag(query: str) -> dict:
                 "source": h["source"],
                 "page": h.get("page"),
                 "score": h["score"],
-                "text": h["text"][:1500],
+                "text": h["text"][:600],
             }
             for h in hits
         ]
@@ -160,7 +162,7 @@ def _exec_rag(query: str) -> dict:
 
 def _exec_web(query: str) -> dict:
     try:
-        hits = web_search_fn(query, max_results=5)
+        hits = web_search_fn(query, max_results=3)
     except Exception as e:
         return {"error": f"Web search failed: {e}"}
     return {
@@ -168,7 +170,7 @@ def _exec_web(query: str) -> dict:
             {
                 "title": h["title"],
                 "url": h["url"],
-                "snippet": h["content"][:1500],
+                "snippet": h["content"][:600],
             }
             for h in hits
         ]
@@ -200,89 +202,50 @@ TOOL_HANDLERS = {
 MAX_TOOL_ROUNDS = 6
 
 
-FALLBACK_SYSTEM_PROMPT = (
-    "You are a strategic intelligence assistant. The tool-calling system is temporarily "
-    "unavailable, so you must answer the user's last question directly from the conversation "
-    "context only. Do NOT attempt to call any tools. If you don't have enough grounded "
-    "information to answer, say so honestly and ask the user to rephrase or upload "
-    "relevant documents."
-)
-
-
-def _strip_tools_from_messages(messages: list[dict]) -> list[dict]:
-    """Return a clean message list with no tool calls/results and a relaxed system prompt.
-
-    Used as a fallback when the model emits malformed tool args and we need to recover
-    with a plain-text answer instead of erroring out to the user.
-    """
-    cleaned: list[dict] = [{"role": "system", "content": FALLBACK_SYSTEM_PROMPT}]
-    for m in messages:
-        role = m.get("role")
-        if role == "system" or role == "tool":
-            continue
-        if role == "assistant" and m.get("tool_calls"):
-            continue  # skip assistant turns that were tool-call-only
-        cleaned.append({"role": role, "content": m.get("content", "")})
-    return cleaned
-
-
-def _chat_with_retry(client, messages, max_retries=3, base_delay=5.0):
-    """Call Groq chat completions with retry on rate-limit errors.
-
-    On 429, rotates to the next API key in the pool (if multiple are configured)
-    and retries immediately. Falls back to a no-tools answer if tool generation
-    keeps failing.
-    """
-    last_exc = None
-    # When a pool of keys is available, give each key a chance before sleeping.
-    effective_max = max(max_retries, groq_pool_size() + 1)
+def _generate_with_retry(client, contents, config, max_retries: int = 3):
+    """Call Gemini generate_content with retry on rate-limit / unavailable errors."""
+    last_exc: Exception | None = None
+    effective_max = max(max_retries, gemini_pool_size() + 1)
     for attempt in range(1, effective_max + 1):
         try:
-            return client.chat.completions.create(
+            return client.models.generate_content(
                 model=CHAT_MODEL,
-                messages=messages,
-                tools=TOOLS,
-                tool_choice="auto",
-                temperature=0.0,
+                contents=contents,
+                config=config,
             )
         except Exception as e:
             err_str = str(e)
-            # Tool generation failed — retry without tools AND with a relaxed system
-            # prompt, otherwise the model keeps emitting tool calls into the void.
-            if "tool_use_failed" in err_str or "Failed to call a function" in err_str:
-                logger.warning("Tool call malformed, retrying without tools: %s", err_str[:120])
-                return client.chat.completions.create(
-                    model=CHAT_MODEL,
-                    messages=_strip_tools_from_messages(messages),
-                    temperature=0.0,
-                )
             is_retryable = any(
-                code in err_str for code in ("503", "502", "429", "rate_limit", "UNAVAILABLE")
+                code in err_str
+                for code in ("429", "RESOURCE_EXHAUSTED", "503", "UNAVAILABLE", "502")
             )
             if not is_retryable:
                 raise
             last_exc = e
-            # On rate-limit, rotate to next key in the pool and retry immediately.
-            if ("429" in err_str or "rate_limit" in err_str) and groq_pool_size() > 1:
-                new_idx = rotate_groq_client()
-                client = get_groq_client()
+            if gemini_pool_size() > 1:
+                new_idx = rotate_gemini_client()
+                client = get_gemini_client()
                 logger.warning(
-                    "Rate limit on key — rotating to Groq key #%d and retrying immediately (attempt %d/%d).",
+                    "Rate limit on key — rotating to Gemini key #%d and retrying (attempt %d/%d).",
                     new_idx, attempt, effective_max,
                 )
                 continue
-            wait = base_delay * attempt if "429" in err_str else base_delay * (2 ** (attempt - 1))
+            wait = min(2 * attempt, 30)
             logger.warning(
-                "Groq attempt %d/%d failed (%s). Retrying in %.0fs…",
+                "Gemini attempt %d/%d failed (%s). Retrying in %.0fs…",
                 attempt, effective_max, err_str[:120], wait,
             )
             time.sleep(wait)
     raise RuntimeError(
-        f"Groq chat failed after {effective_max} retries. Last error: {last_exc}"
+        f"Gemini chat failed after {effective_max} retries. Last error: {last_exc}"
     )
 
 
 # ---------- Agent loop ----------
+
+def _to_content(role: str, text: str) -> gtypes.Content:
+    return gtypes.Content(role=role, parts=[gtypes.Part(text=text)])
+
 
 def run_agent(user_message: str, history: list[dict]) -> dict:
     """Run one agent turn.
@@ -294,52 +257,49 @@ def run_agent(user_message: str, history: list[dict]) -> dict:
     Returns:
         {"answer": str, "tool_calls": [{"name", "args", "result"}, ...]}
     """
-    client = get_groq_client()
+    client = get_gemini_client()
 
-    # Build message list in OpenAI/Groq format
-    messages = [{"role": "system", "content": SYSTEM_PROMPT}]
+    contents: list[gtypes.Content] = []
     for turn in history:
-        role = "user" if turn["role"] == "user" else "assistant"
-        messages.append({"role": role, "content": turn["text"]})
-    messages.append({"role": "user", "content": user_message})
+        role = "user" if turn["role"] == "user" else "model"
+        contents.append(_to_content(role, turn["text"]))
+    contents.append(_to_content("user", user_message))
+
+    config = gtypes.GenerateContentConfig(
+        system_instruction=SYSTEM_PROMPT,
+        tools=TOOLS,
+        temperature=0.0,
+    )
 
     tool_trace: list[dict] = []
 
     for _ in range(MAX_TOOL_ROUNDS):
-        response = _chat_with_retry(client, messages)
-        msg = response.choices[0].message
+        response = _generate_with_retry(client, contents, config)
+        if not response.candidates:
+            return {"answer": "_(no answer)_", "tool_calls": tool_trace}
+
+        model_content = response.candidates[0].content
+        parts = model_content.parts or []
+
+        function_calls = [p.function_call for p in parts if p.function_call]
+        text_chunks = [p.text for p in parts if p.text]
 
         # No tool calls → final answer
-        if not msg.tool_calls:
+        if not function_calls:
+            answer = "\n".join(text_chunks).strip()
             return {
-                "answer": msg.content.strip() if msg.content else "_(no answer)_",
+                "answer": answer or "_(no answer)_",
                 "tool_calls": tool_trace,
             }
 
-        # Append assistant message with tool calls
-        messages.append({
-            "role": "assistant",
-            "content": msg.content or "",
-            "tool_calls": [
-                {
-                    "id": tc.id,
-                    "type": "function",
-                    "function": {
-                        "name": tc.function.name,
-                        "arguments": tc.function.arguments,
-                    },
-                }
-                for tc in msg.tool_calls
-            ],
-        })
+        # Append the model's response (which contains the tool calls) to history
+        contents.append(model_content)
 
-        # Execute each tool call and feed results back
-        for tc in msg.tool_calls:
-            name = tc.function.name
-            try:
-                args = json.loads(tc.function.arguments)
-            except json.JSONDecodeError:
-                args = {}
+        # Execute each function call and feed results back
+        response_parts: list[gtypes.Part] = []
+        for fc in function_calls:
+            name = fc.name
+            args = dict(fc.args) if fc.args else {}
 
             handler = TOOL_HANDLERS.get(name)
             if handler is None:
@@ -351,12 +311,11 @@ def run_agent(user_message: str, history: list[dict]) -> dict:
                     result = {"error": str(e)}
 
             tool_trace.append({"name": name, "args": args, "result": result})
+            response_parts.append(
+                gtypes.Part.from_function_response(name=name, response=result)
+            )
 
-            messages.append({
-                "role": "tool",
-                "tool_call_id": tc.id,
-                "content": json.dumps(result),
-            })
+        contents.append(gtypes.Content(role="user", parts=response_parts))
 
     return {
         "answer": (

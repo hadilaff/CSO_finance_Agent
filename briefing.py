@@ -1,7 +1,7 @@
 """Daily Strategic Briefing — direct search + summarize per area.
 
-Skips the iterative agent loop so each area stays within Groq free-tier TPM
-limits (8000 tok/min/key). One web/rag fetch + one Groq summarize per area.
+Skips the iterative agent loop so each area is a single search + summarize.
+One web/rag fetch + one Gemini summarize per area, run in parallel.
 """
 from __future__ import annotations
 
@@ -12,12 +12,14 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import date as _date, datetime
 from pathlib import Path
 
+from google.genai import types as gtypes
+
 from config import (
     CHAT_MODEL,
     PROJECT_DIR,
-    get_groq_client,
-    groq_pool_size,
-    rotate_groq_client,
+    gemini_pool_size,
+    get_gemini_client,
+    rotate_gemini_client,
 )
 from rag import search as rag_search_fn
 from search import web_search as web_search_fn
@@ -174,32 +176,33 @@ def _gather_rag(query: str, k: int = 3) -> tuple[list[dict], str | None]:
 
 # ---------- summarize ----------
 
-def _groq_summarize(user_msg: str, max_retries: int = 3) -> str:
-    client = get_groq_client()
-    effective = max(max_retries, groq_pool_size() + 1)
+def _gemini_summarize(user_msg: str, max_retries: int = 3) -> str:
+    client = get_gemini_client()
+    effective = max(max_retries, gemini_pool_size() + 1)
     last_exc: Exception | None = None
+    config = gtypes.GenerateContentConfig(
+        system_instruction=BRIEFING_SYSTEM_PROMPT,
+        temperature=0.0,
+    )
     for attempt in range(1, effective + 1):
         try:
-            resp = client.chat.completions.create(
+            resp = client.models.generate_content(
                 model=CHAT_MODEL,
-                messages=[
-                    {"role": "system", "content": BRIEFING_SYSTEM_PROMPT},
-                    {"role": "user", "content": user_msg},
-                ],
-                temperature=0.0,
+                contents=[gtypes.Content(role="user", parts=[gtypes.Part(text=user_msg)])],
+                config=config,
             )
-            return (resp.choices[0].message.content or "").strip()
+            return (resp.text or "").strip()
         except Exception as e:
             err = str(e)
-            retryable = any(c in err for c in ("429", "rate_limit", "413", "503", "502", "UNAVAILABLE"))
+            retryable = any(c in err for c in ("429", "RESOURCE_EXHAUSTED", "503", "502", "UNAVAILABLE"))
             if not retryable:
                 raise
             last_exc = e
-            if groq_pool_size() > 1:
-                rotate_groq_client()
-                client = get_groq_client()
+            if gemini_pool_size() > 1:
+                rotate_gemini_client()
+                client = get_gemini_client()
             time.sleep(2.0 * attempt)
-    raise RuntimeError(f"Groq summarize failed after {effective} retries: {last_exc}")
+    raise RuntimeError(f"Gemini summarize failed after {effective} retries: {last_exc}")
 
 
 def _summarize_area(area_title: str, query: str, sources: list[dict]) -> str:
@@ -213,7 +216,7 @@ def _summarize_area(area_title: str, query: str, sources: list[dict]) -> str:
         f"Query: {query}\n\n"
         f"Sources:\n{sources_block}"
     )
-    return _groq_summarize(user_msg)
+    return _gemini_summarize(user_msg)
 
 
 # ---------- generate ----------
@@ -284,12 +287,12 @@ def generate_briefing(d: _date | None = None, progress=None, max_workers: int | 
     """Run all 6 daily-area briefings in parallel and cache to disk.
 
     progress: optional callable(i_completed, total, area_title) called as each area finishes.
-    max_workers: thread pool size. Defaults to max(3, groq_pool_size()), capped at 6.
+    max_workers: thread pool size. Defaults to max(3, gemini_pool_size()), capped at 6.
     """
     if d is None:
         d = _date.today()
     if max_workers is None:
-        max_workers = min(6, max(3, groq_pool_size()))
+        max_workers = min(6, max(3, gemini_pool_size()))
 
     total = len(DAILY_AREAS)
     sections: list[dict | None] = [None] * total
