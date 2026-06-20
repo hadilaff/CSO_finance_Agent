@@ -1,20 +1,10 @@
-.venv/
-venv/
-env/
-__pycache__/
-**/__pycache__/
+.env
+.venv
+venv
+__pycache__
 *.pyc
 *.pyo
-*.pyd
-.git/
+.chroma
+.git
 .gitignore
-.idea/
-.vscode/
-.DS_Store
-Thumbs.db
 *.md
-AI Assessment.pdf
-.env
-.dockerignore
-Dockerfile
-docker-compose.yml

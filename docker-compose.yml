@@ -1,13 +1,13 @@
 services:
-  cso-assistant:
+  app:
     build: .
-    container_name: cso-assistant
     ports:
       - "8501:8501"
     env_file:
       - .env
     volumes:
-      - ./.chroma:/app/.chroma
-      - ./files:/app/files
-      - ./briefings:/app/briefings
+      - chroma_data:/app/.chroma
     restart: unless-stopped
+
+volumes:
+  chroma_data:
