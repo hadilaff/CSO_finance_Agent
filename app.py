@@ -6,6 +6,7 @@ from datetime import date as _date
 import streamlit as st
 
 from agent import run_agent
+from auth import login_form, logout_button
 from briefing import (
     briefing_to_deck_spec,
     generate_briefing,
@@ -23,16 +24,24 @@ st.set_page_config(
     layout="wide",
 )
 
-st.title("Personal AI Assistant — Strategic Intelligence")
+# ---------- Auth gate ----------
+if not login_form():
+    st.stop()
+
+
+st.title("CSO of an international financial center")
 st.caption(
     "Secure intelligence layer for a Chief Strategy Officer · "
-    "RAG over your documents + Tavily web search · Powered by Groq (gpt-oss-120b) + Gemini embeddings"
+    "RAG over your documents + Tavily web search · Powered by Gemini (Flash + embeddings)"
 )
 
 
 # ---------- Sidebar ----------
 
 with st.sidebar:
+    logout_button(location=st.sidebar)
+    st.divider()
+
     st.header("Institutional Knowledge")
     st.caption("Upload board papers, strategy memos, performance reports (PDF/DOCX/PPTX/TXT/MD).")
 
@@ -214,10 +223,32 @@ def _render_tool_calls(tool_calls: list[dict], key_prefix: str = "") -> None:
             st.json(tc["result"], expanded=False)
 
 
+def _render_speak_button(text: str, key: str) -> None:
+    """Per-message TTS — synthesises only when the user clicks Speak."""
+    if text.startswith(":warning:"):
+        return
+    cache_key = f"tts_{key}"
+    play_key = f"tts_play_{key}"
+    if st.button("🔊 Speak", key=f"speak_{key}"):
+        with st.spinner("Speaking…"):
+            try:
+                st.session_state[cache_key] = synthesize(text)
+                st.session_state[play_key] = True
+            except Exception as e:
+                print(f"[tts] synthesize failed: {e}")
+                st.session_state[cache_key] = b""
+    audio = st.session_state.get(cache_key)
+    if audio:
+        autoplay = st.session_state.pop(play_key, False)
+        st.audio(audio, format="audio/mp3", autoplay=autoplay)
+
+
 for i, turn in enumerate(st.session_state.history):
     with st.chat_message(turn["role"]):
         st.markdown(turn["text"])
         _render_tool_calls(turn.get("tool_calls", []), key_prefix=f"hist{i}")
+        if turn["role"] == "assistant":
+            _render_speak_button(turn["text"], key=f"hist{i}")
 
 
 pending = st.session_state.pop("pending", None)
@@ -225,7 +256,7 @@ chat_input = st.chat_input(
     "Ask about markets, competitors, regulation, or your uploaded docs…"
 )
 
-# Voice input — record once, transcribe via Groq Whisper, treat as user input.
+# Voice input — record once, transcribe via Gemini Flash audio, treat as user input.
 voice_text = None
 with st.expander("🎤 Speak your question", expanded=False):
     mic = st.audio_input("Record", label_visibility="collapsed", key="mic")
@@ -262,14 +293,14 @@ if user_input:
                 err_str = str(e)
                 if "503" in err_str or "UNAVAILABLE" in err_str or "502" in err_str:
                     answer = (
-                        ":warning: **Groq is temporarily unavailable.** "
+                        ":warning: **Gemini is temporarily unavailable.** "
                         "Please wait a moment and try again."
                     )
-                elif "429" in err_str or "rate_limit" in err_str:
+                elif "429" in err_str or "RESOURCE_EXHAUSTED" in err_str:
                     answer = (
-                        ":warning: **Groq rate limit hit.** "
+                        ":warning: **Gemini rate limit hit on all keys.** "
                         "Wait a minute and retry, or check your usage at "
-                        "[console.groq.com](https://console.groq.com)."
+                        "[aistudio.google.com](https://aistudio.google.com)."
                     )
                 else:
                     answer = f":warning: Error: {e}"
@@ -277,19 +308,9 @@ if user_input:
         st.markdown(answer)
         _render_tool_calls(tool_calls, key_prefix="new")
 
-        # Speak the full answer (skip on error responses).
-        if not answer.startswith(":warning:"):
-            with st.spinner("Speaking…"):
-                try:
-                    audio_mp3 = synthesize(answer)
-                except Exception as e:
-                    audio_mp3 = b""
-                    print(f"[tts] synthesize failed: {e}")
-            if audio_mp3:
-                st.audio(audio_mp3, format="audio/mp3", autoplay=True)
-
     st.session_state.history.append({
         "role": "assistant",
         "text": answer,
         "tool_calls": tool_calls,
     })
+    st.rerun()
