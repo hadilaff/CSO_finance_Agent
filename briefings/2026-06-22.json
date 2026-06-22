@@ -1,0 +1,134 @@
+{
+  "date": "2026-06-22",
+  "generated_at": "2026-06-22T22:48:34",
+  "sections": [
+    {
+      "key": "overnight",
+      "title": "Overnight Intelligence",
+      "icon": "🌙",
+      "answer": "Global financial markets are presenting a mixed picture today, with some indices rising while others fell, influenced by geopolitical developments and significant movements in individual tech stocks.\n\n*   Nasdaq futures inched up, though the Nasdaq itself sank over 1% earlier, impacted by Big Tech heavyweights and SpaceX [Web: wsj.com, Web: finance.yahoo.com].\n*   The Dow and S&P 500 rose as investors monitored peace talks [Web: finance.yahoo.com].\n*   Oil prices are slipping, with Brent crude trading below $80 a barrel, despite tense U.S.-Iran negotiations and threats exchanged over the weekend [Web: wsj.com].\n*   Alphabet stock sank following a Nobel AI Scientist's defection, and SpaceX stock closed down 16%, extending losses for a third straight day [Web: finance.yahoo.com].\n*   Getty Images soared as much as 145% after reversing its AI course and announcing a licensing deal, while former Federal Reserve chairman Alan Greenspan died at 100 [Web: finance.yahoo.com].",
+      "tool_calls": [
+        {
+          "name": "web_search",
+          "args": {
+            "query": "global financial markets news today",
+            "topic": "news",
+            "time_range": "day"
+          },
+          "result": {
+            "count": 3,
+            "error": null
+          }
+        }
+      ]
+    },
+    {
+      "key": "market_signals",
+      "title": "Market Signals",
+      "icon": "📈",
+      "answer": "Investor sentiment in emerging markets is mixed, with concerns over transparency in some markets contrasting with strong profit performance in others, while US equity funds are seeing significant inflows.\n\n- MSCI has signaled continued concerns over market transparency in Indonesia, citing opaque shareholding structures and signs of coordinated trading activity [Web: cnbc.com].\n- These transparency issues undermine international investors' ability to accurately assess company free floats and rely on market prices in Indonesia [Web: cnbc.com].\n- The Jakarta Composite Index has lost almost 30% year-to-date following these concerns [Web: cnbc.com].\n- For the first time in four years, companies in emerging markets are beating profit estimates, providing investors with a fresh reason to believe in a bull market [Web: bloomberg.com].\n- US equity funds have experienced a surge in inflows, partly attributed to an Iran deal, with technology drawing record weekly investments [Web: reuters.com].",
+      "tool_calls": [
+        {
+          "name": "web_search",
+          "args": {
+            "query": "global capital flows investor sentiment emerging markets",
+            "topic": "news",
+            "time_range": "week"
+          },
+          "result": {
+            "count": 3,
+            "error": null
+          }
+        }
+      ]
+    },
+    {
+      "key": "competitor_moves",
+      "title": "Competitor Moves",
+      "icon": "🎯",
+      "answer": "Revolut's recent acquisition of two new licenses in the UAE signals a significant expansion in the region's financial technology sector. This development indicates increased competition and service offerings within the UAE's financial landscape.\n\n- Revolut has secured two new licenses in the UAE [Web: fintechfutures.com].\n- This move is in preparation for a full-scale launch by Revolut in the UAE [Web: fintechfutures.com].",
+      "tool_calls": [
+        {
+          "name": "web_search",
+          "args": {
+            "query": "DIFC ADGM Singapore Hong Kong London financial center announcement",
+            "topic": "news",
+            "time_range": "week"
+          },
+          "result": {
+            "count": 3,
+            "error": null
+          }
+        }
+      ]
+    },
+    {
+      "key": "regulatory",
+      "title": "Regulatory Shifts",
+      "icon": "⚖️",
+      "answer": "Legislative efforts are underway in the U.S. to establish a federal framework for digital assets and clarify regulatory responsibilities, while Moldova's EU integration is shaping its financial regulation and digital governance policies.\n\n*   More than 200 crypto firms have urged the U.S. Senate to advance the Digital Asset Market Clarity Act [Web: kitco.com].\n*   This legislation is designed to establish a federal framework for digital assets and clarify regulatory responsibilities between the SEC and CFTC [Web: kitco.com].\n*   The Digital Asset Market Clarity Act has already passed the House of Representatives [Web: kitco.com].\n*   The bill could provide greater legal certainty for blockchain networks, developers, and digital asset businesses [Web: kitco.com].\n*   Moldova’s EU candidate status and broader integration efforts are influencing its economic policy, including financial regulation, digital governance, and payments infrastructure [Web: thefintechtimes.com].",
+      "tool_calls": [
+        {
+          "name": "web_search",
+          "args": {
+            "query": "financial regulation policy change fintech digital assets",
+            "topic": "news",
+            "time_range": "week"
+          },
+          "result": {
+            "count": 3,
+            "error": null
+          }
+        }
+      ]
+    },
+    {
+      "key": "performance",
+      "title": "Performance Alerts",
+      "icon": "📊",
+      "answer": "Two critical strategic initiatives, Digital Asset Licensing Fast-Track and Talent Attraction Programme, are currently \"At Risk\" and require immediate leadership attention to mitigate significant performance issues and potential competitive disadvantages.\n\n- Digital Asset Licensing Fast-Track is \"At Risk\" due to a 3-week consultant delivery delay and an outstanding revised SLA from the legal team [Doc: initiative_status_report_q2_2026.pdf, p.1].\n- This delay risks missing the Q3 2026 go-live target, which could cede first-mover advantage to DIFC [Doc: initiative_status_report_q2_2026.pdf, p.1].\n- The Talent Attraction Programme is \"At Risk\" because visa processing delays, averaging 47 days, are deterring senior international candidates [Doc: initiative_status_report_q2_2026.pdf, p.1].\n- Escalation to the immigration authority at a ministerial level is required to address the visa processing delays impacting the Talent Attraction Programme [Doc: initiative_status_report_q2_2026.pdf, p.1].\n- The challenges with the Talent Attraction Programme directly threaten the Q3 2026 target to recruit 12 senior regulatory and compliance professionals [Doc: initiative_status_report_q2_2026.pdf, p.1], [Doc: board_strategy_memo_q2_2026.pdf, p.1].",
+      "tool_calls": [
+        {
+          "name": "rag_search",
+          "args": {
+            "query": "Initiatives behind plan, off-track KPIs, performance issues, leadership attention needed."
+          },
+          "result": {
+            "count": 3,
+            "error": null
+          }
+        }
+      ]
+    },
+    {
+      "key": "risks",
+      "title": "Risk Indicators",
+      "icon": "⚠️",
+      "answer": "Wall Street is warning US regulators about the potential impact of new global bank capital requirements on Treasury market liquidity [Web: kitco.com], while investors are increasingly factoring geopolitical risks into their financial market assessments [Web: finance.yahoo.com], [Web: consultancy-me.com].\n\n- Wall Street groups are warning US regulators that \"Basel Endgame\" global bank capital requirements could affect liquidity in Treasury markets, urging them to rework proposals [Web: kitco.com].\n- Investors are rethinking political risk following events like the Anthropic Ban, recognizing its potential to be more damaging than high valuations for the AI stock rally [Web: finance.yahoo.com].\n- Ongoing geopolitical tensions across the Middle East are influencing how investors, lenders, and advisors assess real estate risk in the UAE [Web: consultancy-me.com].\n- The Financial Action Task Force (FATF) updated its 'Travel Rule' guidance in March 2026, extending requirements to virtual asset service providers (VASPs) operating with transaction thresholds above USD 1,000 [Doc: regulatory_compliance_summary_2026.pdf, p.1].\n- Singapore's MAS has proposed a 30-day fast-track license for crypto custodians, presenting a regulatory arbitrage risk that requires a response [Doc: board_strategy_memo_q2_2026.pdf, p.2].",
+      "tool_calls": [
+        {
+          "name": "rag_search",
+          "args": {
+            "query": "geopolitical financial market risk regulatory warning"
+          },
+          "result": {
+            "count": 3,
+            "error": null
+          }
+        },
+        {
+          "name": "web_search",
+          "args": {
+            "query": "geopolitical financial market risk regulatory warning",
+            "topic": "news",
+            "time_range": "week"
+          },
+          "result": {
+            "count": 3,
+            "error": null
+          }
+        }
+      ]
+    }
+  ]
+}

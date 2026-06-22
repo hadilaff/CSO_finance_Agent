@@ -30,8 +30,8 @@ After getting tool results, answer following these rules:
 - Use the exact wording from the source documents. Do not paraphrase status — if a document says "draft circulated, final due July 2026", do not say "completed".
 - 1-2 sentence conclusion first, then up to 5 bullets.
 - Cite every fact inline: [Doc: filename, p.N] for internal, [Web: domain] for web.
-- If a tool returns no results, say "No relevant documents found" — never invent facts or document names.
-- Do not answer from memory when tools should be used.
+- If a tool returns results, you MUST use them to answer — even if the match seems indirect. Extract whatever relevant facts are present.
+- Only say "No relevant documents found" if the tool literally returned an empty results list.
 
 DECK RULES (McKinsey-style — when using generate_deck):
 - Every bullet, table row, and chart value MUST come directly from a rag_search or web_search result. Never invent figures, owners, dates, or document names.
@@ -144,7 +144,7 @@ TOOLS = [gtypes.Tool(function_declarations=[_RAG_DECL, _WEB_DECL, _DECK_DECL])]
 # ---------- Tool execution ----------
 
 def _exec_rag(query: str) -> dict:
-    hits = rag_search_fn(query, k=5)
+    hits = rag_search_fn(query, k=6)
     if not hits:
         return {"results": [], "note": "No documents indexed or no matches found."}
     return {
@@ -153,7 +153,7 @@ def _exec_rag(query: str) -> dict:
                 "source": h["source"],
                 "page": h.get("page"),
                 "score": h["score"],
-                "text": h["text"][:600],
+                "text": h["text"][:800],
             }
             for h in hits
         ]
