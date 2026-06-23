@@ -1,10 +1,9 @@
-"""RAG: parse uploaded docs (PDF/DOCX/PPTX/TXT), chunk, embed with Gemini,
-store and search in a persistent Chroma collection."""
+"""RAG: parse uploaded docs (PDF/DOCX/PPTX/TXT), chunk, embed locally via
+ChromaDB's built-in ONNX MiniLM embedder, store and search in ChromaDB."""
 from __future__ import annotations
 
 import io
 import re
-import time
 import logging
 from pathlib import Path
 
@@ -12,15 +11,11 @@ import chromadb
 from chromadb.config import Settings
 from chromadb.api.types import Documents, EmbeddingFunction, Embeddings
 
-from config import CHROMA_DIR, EMBED_MODEL, get_embed_client
+from config import CHROMA_DIR
 
 logger = logging.getLogger(__name__)
 
-# Embedding models to try in order when one is unavailable
-EMBED_MODEL_FALLBACKS = [
-    EMBED_MODEL,                    # primary: models/gemini-embedding-001
-    "models/gemini-embedding-2",    # newer model, fallback
-]
+EMBED_MODEL = "all-MiniLM-L6-v2"   # informational only
 
 COLLECTION_NAME = "institutional_knowledge"
 
@@ -285,63 +280,12 @@ def chunk_text(text: str, chunk_size: int = 1200, overlap: int = 200) -> list[st
     return chunks
 
 
-# ---------- Gemini embedding function for Chroma ----------
+# ---------- Local embedding function for Chroma ----------
 
-def _embed_with_retry(
-    texts: list[str],
-    max_retries: int = 5,
-    base_delay: float = 2.0,
-) -> Embeddings:
-    """Embed texts using Gemini with exponential backoff and model fallback.
-
-    Retries on 503 (UNAVAILABLE) and 429 (RESOURCE_EXHAUSTED). After
-    ``max_retries`` failures on the primary model, tries fallback models once
-    each before raising.
-    """
-    last_exc: Exception | None = None
-
-    for model in dict.fromkeys(EMBED_MODEL_FALLBACKS):  # deduplicated, order kept
-        delay = base_delay
-        for attempt in range(1, max_retries + 1):
-            try:
-                client = get_embed_client()
-                result = client.models.embed_content(
-                    model=model,
-                    contents=texts,
-                )
-                return [list(e.values) for e in result.embeddings]
-            except Exception as e:
-                err_str = str(e)
-                is_retryable = any(
-                    code in err_str for code in ("503", "429", "UNAVAILABLE", "RESOURCE_EXHAUSTED")
-                )
-                if not is_retryable:
-                    raise  # non-transient error — don't retry
-                last_exc = e
-                wait = delay * (2 ** (attempt - 1))
-                logger.warning(
-                    "Embedding attempt %d/%d failed for model %s (%s). "
-                    "Retrying in %.1fs…",
-                    attempt, max_retries, model, err_str[:120], wait,
-                )
-                time.sleep(wait)
-
-        logger.warning("All %d retries exhausted for model %s. Trying next fallback…", max_retries, model)
-
-    raise RuntimeError(
-        f"Gemini embedding failed after retrying all models. Last error: {last_exc}"
-    )
-
-
-class GeminiEmbeddingFunction(EmbeddingFunction):
-    """Calls Gemini's embed_content for both indexing and querying,
-    with automatic retry + model fallback on transient errors."""
-
-    def __init__(self, model: str = EMBED_MODEL):
-        self.model = model
-
-    def __call__(self, input: Documents) -> Embeddings:
-        return _embed_with_retry(list(input))
+def _get_embedding_fn():
+    """ChromaDB's built-in ONNX MiniLM-L6-v2 — no API key, no torch conflicts."""
+    from chromadb.utils.embedding_functions import ONNXMiniLM_L6_V2
+    return ONNXMiniLM_L6_V2()
 
 
 # ---------- Chroma collection ----------
@@ -359,7 +303,7 @@ def _get_collection():
         )
         _collection = _client.get_or_create_collection(
             name=COLLECTION_NAME,
-            embedding_function=GeminiEmbeddingFunction(),
+            embedding_function=_get_embedding_fn(),
             metadata={"hnsw:space": "cosine"},
         )
     return _collection

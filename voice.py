@@ -1,14 +1,13 @@
-"""Voice I/O: audio transcription via Gemini Flash + edge-tts speech synthesis."""
+"""Voice I/O: audio transcription via Groq Whisper + edge-tts speech synthesis."""
 from __future__ import annotations
 
 import asyncio
+import io
 import re
 
-from google.genai import types as gtypes
+from config import get_groq_client
 
-from config import AUDIO_MODEL, get_gemini_client
-
-DEFAULT_TTS_VOICE = "en-US-AriaNeural"  # clean American English female
+DEFAULT_TTS_VOICE = "en-US-AriaNeural"
 
 _MIME_BY_EXT = {
     ".wav":  "audio/wav",
@@ -29,18 +28,15 @@ def _mime_for(filename: str) -> str:
 
 
 def transcribe(audio_bytes: bytes, filename: str = "audio.wav") -> str:
-    """Send audio bytes to Gemini Flash and return the transcript."""
-    client = get_gemini_client()
-    audio_part = gtypes.Part.from_bytes(data=audio_bytes, mime_type=_mime_for(filename))
-    prompt_part = gtypes.Part(
-        text="Transcribe this audio exactly. Return only the transcript, no preamble, no commentary."
+    """Transcribe audio using Groq's Whisper endpoint."""
+    client = get_groq_client()
+    file_tuple = (filename, io.BytesIO(audio_bytes), _mime_for(filename))
+    resp = client.audio.transcriptions.create(
+        file=file_tuple,
+        model="whisper-large-v3-turbo",
+        response_format="text",
     )
-    resp = client.models.generate_content(
-        model=AUDIO_MODEL,
-        contents=[gtypes.Content(role="user", parts=[prompt_part, audio_part])],
-        config=gtypes.GenerateContentConfig(temperature=0.0),
-    )
-    return (resp.text or "").strip()
+    return (resp or "").strip()
 
 
 # ---------- markdown/citation cleanup so TTS doesn't read out brackets ----------
@@ -63,8 +59,6 @@ def _clean_for_tts(text: str) -> str:
     text = _RE_MULTISPACE.sub(" ", text).strip()
     return text
 
-
-# ---------- edge-tts ----------
 
 async def _synthesize_async(text: str, voice: str) -> bytes:
     import edge_tts
