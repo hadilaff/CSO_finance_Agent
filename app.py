@@ -32,7 +32,7 @@ if not login_form():
 st.title("CSO of an international financial center")
 st.caption(
     "Secure intelligence layer for a Chief Strategy Officer · "
-    "RAG over your documents + Tavily web search · Powered by Gemini (Flash + embeddings)"
+    "RAG over your documents + Tavily web search · Powered by Groq (llama-4-scout-17b-16e-instruct) + ONNX embeddings"
 )
 
 
@@ -292,15 +292,11 @@ if user_input:
             except Exception as e:
                 err_str = str(e)
                 if "503" in err_str or "UNAVAILABLE" in err_str or "502" in err_str:
+                    answer = ":warning: **Groq is temporarily unavailable.** Please wait a moment and try again."
+                elif "429" in err_str or "rate_limit" in err_str:
                     answer = (
-                        ":warning: **Gemini is temporarily unavailable.** "
-                        "Please wait a moment and try again."
-                    )
-                elif "429" in err_str or "RESOURCE_EXHAUSTED" in err_str:
-                    answer = (
-                        ":warning: **Gemini rate limit hit on all keys.** "
-                        "Wait a minute and retry, or check your usage at "
-                        "[aistudio.google.com](https://aistudio.google.com)."
+                        ":warning: **Groq rate limit hit.** "
+                        "Wait a minute and retry, or check [console.groq.com](https://console.groq.com)."
                     )
                 else:
                     answer = f":warning: Error: {e}"

@@ -27,8 +27,7 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
 from agent import run_agent  # noqa: E402
-from config import CHAT_MODEL, get_gemini_client  # noqa: E402
-from google.genai import types as gtypes  # noqa: E402
+from config import CHAT_MODEL, get_groq_client  # noqa: E402
 
 logger = logging.getLogger(__name__)
 
@@ -175,15 +174,15 @@ Reply with ONLY a JSON object, no prose, no code fences:
 def llm_judge(question: str, ground_truth: str, answer: str) -> dict:
     if not ground_truth.strip():
         return {"applicable": False}
-    client = get_gemini_client()
+    client = get_groq_client()
     prompt = JUDGE_PROMPT.format(question=question, ground_truth=ground_truth, answer=answer)
     try:
-        resp = client.models.generate_content(
+        resp = client.chat.completions.create(
             model=CHAT_MODEL,
-            contents=[gtypes.Content(role="user", parts=[gtypes.Part(text=prompt)])],
-            config=gtypes.GenerateContentConfig(temperature=0.0),
+            messages=[{"role": "user", "content": prompt}],
+            temperature=0.0,
         )
-        text = (resp.candidates[0].content.parts[0].text or "").strip()
+        text = (resp.choices[0].message.content or "").strip()
         text = re.sub(r"^```(?:json)?\s*|\s*```$", "", text, flags=re.M).strip()
         data = json.loads(text)
         data["applicable"] = True
@@ -326,7 +325,7 @@ def main() -> None:
     parser.add_argument("--limit", type=int, default=None, help="Run only the first N rows (smoke test).")
     parser.add_argument("--no-judge", action="store_true", help="Skip the LLM-as-judge step.")
     parser.add_argument("--ids", type=str, default=None, help="Comma-separated row IDs to run (e.g. R01,W01).")
-    parser.add_argument("--delay", type=float, default=8.0, help="Seconds between rows to pace under Gemini RPM limit (default 8).")
+    parser.add_argument("--delay", type=float, default=2.0, help="Seconds between rows (default 2 for Groq).")
     parser.add_argument("--quota-wait", type=float, default=65.0, help="Sleep on 429 then retry the row once (default 65s).")
     parser.add_argument("--resume", action="store_true", help="Skip rows already succeeded in eval/results.json.")
     args = parser.parse_args()
