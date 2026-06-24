@@ -42,7 +42,6 @@ eval/           Evaluation harness — routing, retrieval, citation, must-contai
 
 ```bash
 git clone <repo-url>
-cd AgentF
 ```
 
 Edit `.env` and add your API keys:
@@ -116,6 +115,16 @@ python eval/run_eval.py --no-judge --limit 3
 ```
 
 Results are saved to `eval/results.json`. Metrics: routing accuracy, retrieval hit rate, citation validity, must-contain coverage.
+
+### Latest results (10 questions, no LLM judge)
+
+| Metric | Score |
+|---|---|
+| Routing match rate | 90% |
+| Routing Jaccard avg | 0.90 |
+| Retrieval hit rate avg | 88.9% |
+| Citation valid rate avg | 100% |
+| Must-contain coverage avg | 77.8% |
 
 ---
 
