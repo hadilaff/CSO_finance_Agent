@@ -14,10 +14,14 @@ logger = logging.getLogger(__name__)
 
 SYSTEM_PROMPT = """You are a strategic intelligence assistant for a Chief Strategy Officer (CSO) of an international financial center.
 
-You have THREE tools you MUST use before answering:
-- rag_search: call this for ANY question about internal documents, "our" organization, milestones, strategy, reports, initiatives, performance, or benchmarking.
+You have TWO tools:
+- rag_search: call this for ANY question about internal documents, "our" organization, milestones, strategy, reports, initiatives, performance, KPIs, licensed entities, licensed firms, registration numbers, fintech, or benchmarking.
 - web_search: call this for competitor activity, regulatory news, market data, or anything external.
-- generate_deck: call this ONLY when the user explicitly asks for a deck, slides, presentation, PPT, or PowerPoint. Always gather content with rag_search/web_search FIRST, then build the deck from those results.
+
+When the user asks for a deck, slides, or presentation:
+- Call rag_search (and web_search if needed) to gather the content.
+- Then respond with a brief summary of what you found — the deck will be built automatically.
+- Do NOT output any JSON, tool calls, or code in your response.
 
 After getting tool results, answer following these rules:
 - Answer ONLY what was specifically asked. Respect these definitions:
@@ -30,15 +34,11 @@ After getting tool results, answer following these rules:
 - Use the exact wording and status from the source. Never upgrade a status.
 - 1-2 sentence conclusion first, then up to 5 bullets.
 - Cite every fact inline: [Doc: filename, p.N] for internal, [Web: domain] for web.
-- Do not answer from memory when tools should be used.
-
-DECK RULES (McKinsey-style):
-- Every bullet/table/chart value MUST come from tool results. Never invent figures.
-- ACTION TITLES: every slide title is a takeaway sentence, not a topic label.
-- After generate_deck returns, tell the user the deck is ready — do not repeat slide content."""
+- Do not answer from memory when tools should be used."""
 
 
-# ---------- Tool definitions (Groq/OpenAI format) ----------
+# ---------- Tool definitions (Groq/OpenAI format) — rag_search + web_search only ----------
+# generate_deck is handled automatically by the agent when deck intent is detected.
 
 TOOLS = [
     {
@@ -66,51 +66,6 @@ TOOLS = [
                     "query": {"type": "string", "description": "The web search query."}
                 },
                 "required": ["query"],
-            },
-        },
-    },
-    {
-        "type": "function",
-        "function": {
-            "name": "generate_deck",
-            "description": "Create a PowerPoint (.pptx) deck. Use ONLY after gathering facts via rag_search/web_search.",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "title": {"type": "string"},
-                    "subtitle": {"type": "string"},
-                    "filename": {"type": "string"},
-                    "slides": {
-                        "type": "array",
-                        "items": {
-                            "type": "object",
-                            "properties": {
-                                "type": {"type": "string", "description": "bullets, table, chart, or title"},
-                                "title": {"type": "string"},
-                                "lead_in": {"type": "string"},
-                                "source": {"type": "string"},
-                                "bullets": {"type": "array", "items": {"type": "string"}},
-                                "headers": {"type": "array", "items": {"type": "string"}},
-                                "rows": {"type": "array", "items": {"type": "array", "items": {"type": "string"}}},
-                                "categories": {"type": "array", "items": {"type": "string"}},
-                                "series": {
-                                    "type": "array",
-                                    "items": {
-                                        "type": "object",
-                                        "properties": {
-                                            "name": {"type": "string"},
-                                            "values": {"type": "array", "items": {"type": "number"}},
-                                        },
-                                        "required": ["name", "values"],
-                                    },
-                                },
-                                "chart_type": {"type": "string"},
-                            },
-                            "required": ["type", "title"],
-                        },
-                    },
-                },
-                "required": ["title", "slides"],
             },
         },
     },
@@ -167,9 +122,8 @@ def _exec_deck(title: str, slides: list, subtitle: str | None = None,
 
 
 TOOL_HANDLERS = {
-    "rag_search":    _exec_rag,
-    "web_search":    _exec_web,
-    "generate_deck": _exec_deck,
+    "rag_search": _exec_rag,
+    "web_search":  _exec_web,
 }
 
 
@@ -178,7 +132,7 @@ TOOL_HANDLERS = {
 MAX_TOOL_ROUNDS = 6
 
 
-def _chat_with_retry(client, messages, tool_choice: str = "required", max_retries: int = 3, base_delay: float = 5.0):
+def _chat_with_retry(client, messages, tool_choice: str = "auto", max_retries: int = 3, base_delay: float = 3.0, any_tools_ran: bool = False):
     """Groq chat with retry on rate-limit and tool-generation errors."""
     last_exc = None
     for attempt in range(1, max_retries + 1):
@@ -193,16 +147,24 @@ def _chat_with_retry(client, messages, tool_choice: str = "required", max_retrie
         except Exception as e:
             err_str = str(e)
             if "tool_use_failed" in err_str or "Failed to call a function" in err_str:
-                if tool_choice != "auto":
-                    logger.warning("Tool call generation failed with tool_choice=%s, retrying with auto.", tool_choice)
-                    return _chat_with_retry(client, messages, tool_choice="auto", max_retries=1)
-                logger.warning("Tool call generation failed, calling without tools to get final answer.")
-                # Pass full message history so model can use already-retrieved tool results
-                return client.chat.completions.create(
-                    model=CHAT_MODEL,
-                    messages=messages,
-                    temperature=0.0,
+                if attempt < max_retries:
+                    logger.warning("Tool call generation failed (attempt %d), retrying…", attempt)
+                    time.sleep(1.0)
+                    continue
+                if any_tools_ran:
+                    logger.warning("Tool call generation failed, answering from existing tool results.")
+                    return client.chat.completions.create(
+                        model=CHAT_MODEL,
+                        messages=messages,
+                        temperature=0.0,
+                    )
+                logger.warning("Tool call generation failed with no tool results — refusing to answer.")
+                from types import SimpleNamespace
+                fake_msg = SimpleNamespace(
+                    tool_calls=None,
+                    content="I was unable to search the documents for this question. Please try rephrasing it.",
                 )
+                return SimpleNamespace(choices=[SimpleNamespace(message=fake_msg)])
             is_retryable = any(c in err_str for c in ("503", "502", "429", "rate_limit", "UNAVAILABLE"))
             if not is_retryable:
                 raise
@@ -211,6 +173,70 @@ def _chat_with_retry(client, messages, tool_choice: str = "required", max_retrie
             logger.warning("Groq attempt %d/%d failed. Retrying in %.0fs…", attempt, max_retries, wait)
             time.sleep(wait)
     raise RuntimeError(f"Groq chat failed after {max_retries} retries. Last error: {last_exc}")
+
+
+# ---------- Deck builder (fallback when model fails to chain generate_deck) ----------
+
+_DECK_BUILDER_PROMPT = """You are a McKinsey-style deck builder. Given a user request and retrieved document chunks, produce a JSON deck spec.
+
+Rules:
+- Use ONLY facts from the provided chunks. Never invent numbers, names, or dates.
+- Every slide title must be an ACTION TITLE (a takeaway sentence, not a topic label).
+  GOOD: "Two initiatives at risk threaten Q3 2026 targets"
+  BAD:  "Risk Summary"
+- Include a mix of slide types: bullets, table, chart where data supports it.
+- For charts: use "bar" for comparisons, "column" for progress/budget, "pie" for composition.
+- Keep bullets to 3-5 per slide, short and parallel.
+- Typical structure: Executive Summary (bullets) → Portfolio Status (table) → At-Risk Items (bullets) → Budget Utilization (chart) → Next Steps (bullets)
+- source field: cite the document filename and page, e.g. "initiative_status_report_q2_2026.pdf, p.1"
+
+Return ONLY a valid JSON object — no prose, no code fences:
+{
+  "title": "deck title",
+  "subtitle": "optional subtitle",
+  "filename": "output_filename_no_extension",
+  "slides": [
+    {"type": "bullets", "title": "action title", "lead_in": "optional framing sentence", "bullets": ["..."], "source": "file.pdf, p.1"},
+    {"type": "table", "title": "action title", "headers": ["Col1","Col2"], "rows": [["a","b"]], "source": "file.pdf, p.2"},
+    {"type": "chart", "title": "action title", "categories": ["A","B"], "series": [{"name": "Series", "values": [1,2]}], "chart_type": "bar", "source": "file.pdf, p.2"}
+  ]
+}"""
+
+
+def _build_deck_from_rag(client, user_message: str, rag_results: list[dict]) -> dict:
+    """Ask Groq to structure RAG chunks into a rich deck spec, then build the PPTX."""
+    sources_block = "\n\n".join(
+        f"[{r['source']}, p.{r.get('page', '?')}]\n{r['text'][:600]}"
+        for r in rag_results[:8]
+    )
+    prompt = (
+        f"User request: {user_message}\n\n"
+        f"Retrieved document chunks:\n{sources_block}\n\n"
+        "Build a McKinsey-style deck spec as JSON."
+    )
+    try:
+        resp = client.chat.completions.create(
+            model=CHAT_MODEL,
+            messages=[
+                {"role": "system", "content": _DECK_BUILDER_PROMPT},
+                {"role": "user", "content": prompt},
+            ],
+            temperature=0.0,
+        )
+        import re as _re
+        raw = (resp.choices[0].message.content or "").strip()
+        raw = _re.sub(r"^```(?:json)?\s*|\s*```$", "", raw, flags=_re.M).strip()
+        spec = json.loads(raw)
+        return _exec_deck(**spec)
+    except Exception as e:
+        logger.warning("Deck builder LLM call failed (%s) — using simple fallback", e)
+        bullets = [r["text"][:200] for r in rag_results[:5]]
+        sources = ", ".join({r["source"] for r in rag_results})
+        spec = {
+            "title": user_message[:80],
+            "slides": [{"type": "bullets", "title": "Key findings", "bullets": bullets, "source": sources}],
+        }
+        return _exec_deck(**spec)
 
 
 # ---------- Agent loop ----------
@@ -225,19 +251,20 @@ def run_agent(user_message: str, history: list[dict]) -> dict:
     messages.append({"role": "user", "content": user_message})
 
     tool_trace: list[dict] = []
-    first_round = True
+    has_rag_results = False
+    any_tools_ran = False
+
+    # Detect deck intent upfront — handle via dedicated flow to avoid
+    # generate_deck tool call failures (complex schema confuses the model)
+    deck_keywords = ("deck", "slides", "presentation", "ppt", "powerpoint")
+    is_deck_request = any(kw in user_message.lower() for kw in deck_keywords)
 
     for _ in range(MAX_TOOL_ROUNDS):
-        # Force tool use on the first round so the model always searches before answering.
-        # After the first tool result is returned, switch to auto.
-        tc_mode = "required" if first_round else "auto"
-        response = _chat_with_retry(client, messages, tool_choice=tc_mode)
-        first_round = False
+        response = _chat_with_retry(client, messages, any_tools_ran=any_tools_ran)
         msg = response.choices[0].message
 
         if not msg.tool_calls:
             answer = (msg.content or "_(no answer)_").strip()
-            # Normalize bare citations [filename, p.N] → [Doc: filename, p.N]
             import re as _re
             answer = _re.sub(
                 r'\[(?!Doc:|Web:)([^\]]+?\.(?:pdf|docx|pptx|txt|md)[^\]]*)\]',
@@ -245,6 +272,23 @@ def run_agent(user_message: str, history: list[dict]) -> dict:
                 answer,
                 flags=_re.IGNORECASE,
             )
+            # Guard: if no tools ran at all and this isn't a deck request,
+            # the model answered from memory — replace with a safe refusal.
+            if not any_tools_ran and not is_deck_request:
+                logger.warning("Model answered without calling any tools — refusing to prevent hallucination.")
+                answer = "I was unable to search the documents for this question. Please try rephrasing it."
+            # If user asked for a deck but model never called generate_deck,
+            # build it automatically from the RAG results we already have.
+            deck_called = any(tc["name"] == "generate_deck" for tc in tool_trace)
+            if has_rag_results and not deck_called and is_deck_request:
+                rag_results = []
+                for tc in tool_trace:
+                    if tc["name"] == "rag_search":
+                        rag_results.extend(tc["result"].get("results", []))
+                if rag_results:
+                    deck_result = _build_deck_from_rag(client, user_message, rag_results)
+                    tool_trace.append({"name": "generate_deck", "args": {}, "result": deck_result})
+                    answer = "Your deck is ready to download."
             return {"answer": answer, "tool_calls": tool_trace}
 
         # Append assistant message with tool calls
@@ -277,12 +321,30 @@ def run_agent(user_message: str, history: list[dict]) -> dict:
                 except Exception as e:
                     result = {"error": str(e)}
 
+            if name == "rag_search":
+                has_rag_results = True
+
+            any_tools_ran = True
             tool_trace.append({"name": name, "args": args, "result": result})
             messages.append({
                 "role": "tool",
                 "tool_call_id": tc.id,
                 "content": json.dumps(result),
             })
+
+            # If user asked for a deck and we now have RAG results, build it now
+            # instead of waiting for the model to call generate_deck (unreliable)
+            deck_called = any(tc["name"] == "generate_deck" for tc in tool_trace)
+            if is_deck_request and has_rag_results and not deck_called:
+                rag_results = []
+                for tc in tool_trace:
+                    if tc["name"] == "rag_search":
+                        rag_results.extend(tc["result"].get("results", []))
+                if rag_results:
+                    deck_result = _build_deck_from_rag(client, user_message, rag_results)
+                    tool_trace.append({"name": "generate_deck", "args": {}, "result": deck_result})
+                    # Don't append to messages — this ends the loop on next iteration
+                    break
 
     return {
         "answer": "I exceeded the tool-call budget. Try rephrasing or narrowing the question.",

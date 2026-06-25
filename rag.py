@@ -280,6 +280,60 @@ def chunk_text(text: str, chunk_size: int = 1200, overlap: int = 200) -> list[st
     return chunks
 
 
+# Matches numbered sections (e.g. "1. Title", "2.1 Title") and markdown headings ("## Title")
+_HEADING_RE = re.compile(
+    r"^(?:\d+(?:\.\d+)*\.?\s+[A-Z].+|#{1,3}\s+.+)$",
+    re.MULTILINE,
+)
+
+
+def chunk_by_sections(text: str, chunk_size: int = 1200, overlap: int = 200) -> list[str]:
+    """Split text by section headings, prepend heading to each chunk.
+
+    Each detected section heading starts a new chunk. If a section body exceeds
+    chunk_size, it is further split with chunk_text() — with the heading
+    prepended to every sub-chunk so context is never lost.
+
+    Falls back to plain chunk_text() if no headings are detected.
+    """
+    text = re.sub(r"\n{3,}", "\n\n", text).strip()
+    if not text:
+        return []
+
+    # Find all heading positions
+    matches = list(_HEADING_RE.finditer(text))
+    if not matches:
+        return chunk_text(text, chunk_size, overlap)
+
+    # Build (heading, body) pairs
+    sections: list[tuple[str, str]] = []
+    for i, m in enumerate(matches):
+        heading = m.group(0).strip()
+        body_start = m.end()
+        body_end = matches[i + 1].start() if i + 1 < len(matches) else len(text)
+        body = text[body_start:body_end].strip()
+        sections.append((heading, body))
+
+    # Prepend any text before the first heading as a preamble section
+    preamble = text[:matches[0].start()].strip()
+    if preamble:
+        sections.insert(0, ("", preamble))
+
+    result: list[str] = []
+    for heading, body in sections:
+        if not body and not heading:
+            continue
+        full = f"{heading}\n{body}".strip() if heading else body
+        if len(full) <= chunk_size:
+            result.append(full)
+        else:
+            # Section too large — window-split but keep heading on every sub-chunk
+            sub_chunks = chunk_text(body, chunk_size, overlap)
+            for sub in sub_chunks:
+                result.append(f"{heading}\n{sub}".strip() if heading else sub)
+    return result
+
+
 # ---------- Local embedding function for Chroma ----------
 
 def _get_embedding_fn():
@@ -314,14 +368,12 @@ _TABLE_ROWS_RE = re.compile(
     re.S,
 )
 
+# Matches bullet/numbered list items that contain a standalone fact
+_BULLET_RE = re.compile(r"^[\s]*(?:[-•(cid:\d+)]+|\d+\.)\s+(.+)$", re.MULTILINE)
+
 
 def _extract_table_sentences(page_text: str) -> list[str]:
-    """Pull each '[Table rows in natural language]' line out as a standalone sentence.
-
-    Indexing each sentence atomically means a query like 'digital asset licenses
-    Q2 2026' lands directly on the chunk that contains '... Q2 2026: 28.' rather
-    than competing with the surrounding prose chunk for the top-k window.
-    """
+    """Pull each '[Table rows in natural language]' line out as a standalone sentence."""
     sentences: list[str] = []
     for m in _TABLE_ROWS_RE.finditer(page_text):
         for line in m.group(1).split("\n"):
@@ -331,13 +383,31 @@ def _extract_table_sentences(page_text: str) -> list[str]:
     return sentences
 
 
+def _extract_bullet_sentences(page_text: str, min_len: int = 30) -> list[str]:
+    """Extract bullet/list items as standalone atomic chunks.
+
+    Items shorter than min_len chars are skipped (likely labels, not facts).
+    This ensures sentences like 'Recruit 12 senior regulatory professionals by Q3 2026'
+    get their own dedicated chunk with high retrieval specificity.
+    """
+    # Remove table rows section to avoid duplication with _extract_table_sentences
+    clean = _TABLE_ROWS_RE.sub("", page_text)
+    sentences = []
+    for m in _BULLET_RE.finditer(clean):
+        item = m.group(1).strip()
+        if len(item) >= min_len:
+            sentences.append(item)
+    return sentences
+
+
 def index_file(filename: str, data: bytes) -> int:
     """Parse, chunk, embed, and store one file. Returns the number of chunks indexed.
 
-    Each page is split into two kinds of chunks:
-      - kind='text'      — windowed chunks of the full page text (prose + tables in context)
-      - kind='table_row' — one chunk per '[Table rows in natural language]' sentence,
-                           so cell-level queries can rank on exact keyword overlap.
+    Each page is split into four kinds of chunks:
+      - kind='section'   — one chunk per document section (heading + body)
+      - kind='text'      — windowed chunks of the full page (fallback for cross-section queries)
+      - kind='bullet'    — one chunk per bullet/list item (atomic fact retrieval)
+      - kind='table_row' — one chunk per table row sentence (exact cell-level retrieval)
     """
     pages = parse_file_with_pages(filename, data)
     if not pages:
@@ -347,23 +417,25 @@ def index_file(filename: str, data: bytes) -> int:
     all_metadatas: list[dict] = []
     chunk_idx = 0
     for page_num, page_text in pages:
+        # Section-based chunks
+        for chunk in chunk_by_sections(page_text):
+            all_chunks.append(chunk)
+            all_metadatas.append({"source": filename, "chunk": chunk_idx, "page": page_num, "kind": "section"})
+            chunk_idx += 1
+        # Windowed chunks
         for chunk in chunk_text(page_text):
             all_chunks.append(chunk)
-            all_metadatas.append({
-                "source": filename,
-                "chunk": chunk_idx,
-                "page": page_num,
-                "kind": "text",
-            })
+            all_metadatas.append({"source": filename, "chunk": chunk_idx, "page": page_num, "kind": "text"})
             chunk_idx += 1
+        # Atomic bullet sentences
+        for sentence in _extract_bullet_sentences(page_text):
+            all_chunks.append(sentence)
+            all_metadatas.append({"source": filename, "chunk": chunk_idx, "page": page_num, "kind": "bullet"})
+            chunk_idx += 1
+        # Table row sentences
         for sentence in _extract_table_sentences(page_text):
             all_chunks.append(sentence)
-            all_metadatas.append({
-                "source": filename,
-                "chunk": chunk_idx,
-                "page": page_num,
-                "kind": "table_row",
-            })
+            all_metadatas.append({"source": filename, "chunk": chunk_idx, "page": page_num, "kind": "table_row"})
             chunk_idx += 1
 
     if not all_chunks:

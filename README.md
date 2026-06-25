@@ -2,7 +2,7 @@
 
 A strategic intelligence chatbot for a Chief Strategy Officer, combining RAG over internal documents with live web search.
 
-**Stack:** Groq (llama-4-scout-17b) · ONNX local embeddings · ChromaDB · Tavily · Streamlit
+**Stack:** Groq (llama-3.3-70b-versatile) · ONNX local embeddings · ChromaDB · Tavily · Streamlit
 
 ---
 
@@ -28,11 +28,22 @@ eval/           Evaluation harness — routing, retrieval, citation, must-contai
 | Step | Detail |
 |---|---|
 | Parsing | PDF (pdfplumber + table extraction), DOCX, PPTX, TXT, MD |
-| Chunking | 1,200 char chunks, 200 char overlap, split at natural boundaries |
+| Chunking | 4-layer hybrid strategy (see below) |
 | Embedding | `all-MiniLM-L6-v2` via ChromaDB's built-in ONNX runtime — **no API key, runs locally** |
 | Storage | ChromaDB persistent collection with cosine similarity index |
 | Retrieval | Top-6 chunks by cosine similarity, page metadata included |
 | Citations | `[Doc: filename, p.N]` inline in every answer |
+
+**Chunking strategy — 4 layers per page:**
+
+| Layer | How | Best for |
+|---|---|---|
+| `section` | Split at numbered headings (`1. Title`, `## Title`), prepend heading to every sub-chunk | Section-specific questions ("what are our milestones?") |
+| `text` | Sliding window (1,200 chars, 200 overlap), split at natural boundaries | Cross-section and keyword queries |
+| `bullet` | One chunk per bullet/list item ≥30 chars | Atomic facts ("recruit 12 professionals", "45% progress") |
+| `table_row` | One sentence per table cell in natural language | Numeric lookups ("28% growth", "$4.2M budget") |
+
+Each document page produces all 4 chunk types, stored together in ChromaDB. Retrieval picks the best match across all layers.
 
 ---
 
@@ -94,7 +105,7 @@ streamlit run app.py
 
 | Component | Model | Provider |
 |---|---|---|
-| Chat + tool calling | `meta-llama/llama-4-scout-17b-16e-instruct` | Groq |
+| Chat + tool calling | `llama-3.3-70b-versatile` | Groq |
 | Voice transcription | `whisper-large-v3-turbo` | Groq |
 | Text-to-speech | `en-US-AriaNeural` (edge-tts) | Local / Microsoft Edge |
 | Embeddings | `all-MiniLM-L6-v2` (ONNX) | Local |
