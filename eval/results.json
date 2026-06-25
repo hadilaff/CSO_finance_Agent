@@ -15,8 +15,8 @@
     {
       "id": "1",
       "question": "How many senior compliance professionals will we recruit by end of Q3 2026?",
-      "answer": "We plan to recruit 12 senior regulatory and compliance professionals by the end of Q3 2026. This is part of our strategic priorities to strengthen our regulatory compliance framework and support our growing financial center [Doc: board_strategy_memo_q2_2026.pdf, p.1].\n\nHere are some key points related to our recruitment plans:\n* The Talent Attraction Programme is currently at risk due to visa processing delays, which are deterring senior international candidates [Doc: initiative_status_report_q2_2026.pdf, p.1].\n* We have a budget of $1.1 million allocated for the Talent Attraction Programme [Doc: initiative_status_report_q2_2026.pdf, p.1].\n* Senior compliance roles have been unfilled for an average of 97 days [Doc: board_strategy_memo_q2_2026.pdf, p.2].\n* The recruitment of senior regulatory and compliance professionals is critical to support our digital asset licensing framework and ESG reporting requirements [Doc: board_strategy_memo_q2_2026.pdf, p.1].",
-      "elapsed_s": 5.59,
+      "answer": "We plan to recruit 12 senior regulatory and compliance professionals by the end of Q3 2026. This information is stated in our board strategy memo for Q2 2026 [Doc: board_strategy_memo_q2_2026.pdf, p.1]. \n\n* Number of senior compliance professionals to be recruited by end of Q3 2026: 12 [Doc: board_strategy_memo_q2_2026.pdf, p.1]\n* Average number of days senior compliance roles remain unfilled: 97 days [Doc: board_strategy_memo_q2_2026.pdf, p.2]",
+      "elapsed_s": 3.76,
       "tools_called": [
         "rag_search"
       ],
@@ -38,7 +38,7 @@
         ]
       },
       "citations": {
-        "total_citations": 5,
+        "total_citations": 3,
         "invalid_citations": 0,
         "valid_rate": 1.0,
         "invalid_doc_cites": [],
@@ -57,8 +57,8 @@
     {
       "id": "2",
       "question": "What was the YoY growth in digital asset licenses from Q2 2025 to Q2 2026?",
-      "answer": "No relevant information was found on the year-over-year growth in digital asset licenses from Q2 2025 to Q2 2026. However, here are some related updates on digital assets [Web: fidelitydigitalassets.com]:\n* The digital assets market started Q2 2026 in a period of consolidation, with constrained prices, but several market metrics and on-chain indicators suggest early signs of stabilization.\n* DeFi applications saw significant momentum in 2025, driven by improved technology and regulatory tailwinds.\n* There was growth in stablecoins and tokenized assets, as well as DeFi lending, led by Aave, Morpho, and Maple Finance.\n* Decentralized perpetual futures exchanges like Hyperliquid consistently see open interest and daily volumes that rival some of the largest centralized derivatives exchanges.",
-      "elapsed_s": 7.41,
+      "answer": "No relevant information found on the year-over-year growth in digital asset licenses from Q2 2025 to Q2 2026. However, here are some related trends in digital assets [Web: fidelitydigitalassets.com]:\n* Continued integration of digital assets into the broader financial system\n* Increased focus on token holder rights and on-chain businesses prioritizing mechanisms such as buybacks and clearer ownership rights\n* Institutional momentum and macro uncertainty shaping the digital asset market\n* Potential for a breakout and return to new all-time highs in 2026 due to shifting liquidity conditions and policy signals.",
+      "elapsed_s": 4.74,
       "tools_called": [
         "web_search"
       ],
@@ -105,8 +105,8 @@
     {
       "id": "3",
       "question": "What is the budget for the Financial Innovation Hub Phase 2?",
-      "answer": "The budget for the Financial Innovation Hub Phase 2 is $4,200,000. Here are the key details [Doc: initiative_status_report_q2_2026.pdf, p.2]:\n* Approved budget: $4,200,000\n* Spent to date: $2,856,000\n* Remaining budget: $1,344,000\n* Forecast at completion: $4,200,000\n* Progress: 68% complete\n* Status: On Track",
-      "elapsed_s": 2.75,
+      "answer": "The budget for the Financial Innovation Hub Phase 2 is $4,200,000. Here are the key details:\n* Budget: $4,200,000 [Doc: initiative_status_report_q2_2026.pdf, p.1]\n* Status: On Track [Doc: initiative_status_report_q2_2026.pdf, p.1]\n* Owner: Innovation Division [Doc: initiative_status_report_q2_2026.pdf, p.1]\n* Progress: 68% [Doc: initiative_status_report_q2_2026.pdf, p.1]\n* Spent to Date: $2,856,000 [Doc: initiative_status_report_q2_2026.pdf, p.2]\n* Remaining Budget: $1,344,000 [Doc: initiative_status_report_q2_2026.pdf, p.2]",
+      "elapsed_s": 2.19,
       "tools_called": [
         "rag_search"
       ],
@@ -128,7 +128,7 @@
         ]
       },
       "citations": {
-        "total_citations": 1,
+        "total_citations": 6,
         "invalid_citations": 0,
         "valid_rate": 1.0,
         "invalid_doc_cites": [],
@@ -147,8 +147,8 @@
     {
       "id": "4",
       "question": "What is the progress percentage of the Digital Asset Licensing Fast-Track initiative?",
-      "answer": "The Digital Asset Licensing Fast-Track initiative has a progress percentage of 45% and is currently flagged as \"At Risk\" due to consultant delivery delays and outstanding revised SLA from the legal team, which poses a risk of missing the Q3 2026 go-live target.\n\n* Initiative: Digital Asset Licensing Fast-Track\n* Progress: 45%\n* Status: At Risk\n* Reason: Consultant delivery delayed by 3 weeks, revised SLA from legal team still outstanding\n* Risk: Missing the Q3 2026 go-live target, ceding first-mover advantage to DIFC [Doc: initiative_status_report_q2_2026.pdf, p.1]",
-      "elapsed_s": 1.96,
+      "answer": "The Digital Asset Licensing Fast-Track initiative is currently at 45% progress and is classified as \"At Risk\" due to consultant delivery being delayed by 3 weeks.\n\n* Progress percentage: 45% [Doc: initiative_status_report_q2_2026.pdf, p.1]\n* Status: At Risk [Doc: initiative_status_report_q2_2026.pdf, p.1]\n* Owner: Regulatory Affairs [Doc: initiative_status_report_q2_2026.pdf, p.1]\n* Budget: USD 850,000 [Doc: initiative_status_report_q2_2026.pdf, p.1]\n* Reason for At Risk status: Consultant delivery delayed by 3 weeks [Doc: initiative_status_report_q2_2026.pdf, p.1]",
+      "elapsed_s": 1.87,
       "tools_called": [
         "rag_search"
       ],
@@ -170,7 +170,7 @@
         ]
       },
       "citations": {
-        "total_citations": 1,
+        "total_citations": 5,
         "invalid_citations": 0,
         "valid_rate": 1.0,
         "invalid_doc_cites": [],
@@ -189,8 +189,8 @@
     {
       "id": "5",
       "question": "Which initiatives are flagged \"At Risk\"?",
-      "answer": "Two initiatives are currently flagged as 'At Risk':\n* Digital Asset Licensing Fast-Track: Consultant delivery delayed by 3 weeks. Revised SLA from legal team still outstanding. Risk of missing the Q3 2026 go-live target which would cede first-mover advantage to DIFC. [Doc: initiative_status_report_q2_2026.pdf, p.1]\n* Talent Attraction Programme: Visa processing delays averaging 47 days are deterring senior international candidates. Escalation to immigration authority required at ministerial level. [Doc: initiative_status_report_q2_2026.pdf, p.1]",
-      "elapsed_s": 2.74,
+      "answer": "Two initiatives are currently flagged as 'At Risk'. \n* Digital Asset Licensing Fast-Track (Regulatory Affairs): Consultant delivery delayed by 3 weeks. Revised SLA from legal team still outstanding. Risk of missing the Q3 2026 go-live target which would cede first-mover advantage to DIFC [Doc: initiative_status_report_q2_2026.pdf, p.1].\n* Talent Attraction Programme (HR): 40% complete [Doc: initiative_status_report_q2_2026.pdf, p.1].",
+      "elapsed_s": 1.78,
       "tools_called": [
         "rag_search"
       ],
@@ -231,8 +231,8 @@
     {
       "id": "6",
       "question": "What is the deadline for the AML/CFT Framework Update (FATF)?",
-      "answer": "The deadline for the AML/CFT Framework Update (FATF) is August 15, 2026. \n\n* The Financial Action Task Force (FATF) updated its Recommendation 16 ('Travel Rule') guidance in March 2026.\n* All eight VASPs licensed in the center have been notified and must demonstrate compliance by August 15, 2026 [Doc: regulatory_compliance_summary_2026.pdf, p.1].",
-      "elapsed_s": 7.53,
+      "answer": "The deadline for the AML/CFT Framework Update (FATF) is August 15, 2026. \n* Deadline: August 15, 2026 [Doc: regulatory_compliance_summary_2026.pdf, p.1]\n* Impact: High [Doc: regulatory_compliance_summary_2026.pdf, p.1]\n* Jurisdiction: All licensed entities [Doc: regulatory_compliance_summary_2026.pdf, p.1]\n* Status: Training underway [Doc: regulatory_compliance_summary_2026.pdf, p.1]",
+      "elapsed_s": 2.77,
       "tools_called": [
         "rag_search"
       ],
@@ -254,7 +254,7 @@
         ]
       },
       "citations": {
-        "total_citations": 1,
+        "total_citations": 4,
         "invalid_citations": 0,
         "valid_rate": 1.0,
         "invalid_doc_cites": [],
@@ -275,8 +275,8 @@
     {
       "id": "7",
       "question": "Which initiatives are at risk or behind schedule?",
-      "answer": "Two initiatives are currently flagged as 'At Risk' and two as 'Behind Schedule'. \n* The initiatives at risk are [Doc: initiative_status_report_q2_2026.pdf, p.1]:\n  * Digital Asset Licensing Fast-Track: Consultant delivery delayed by 3 weeks. Revised SLA from legal team still outstanding. Risk of missing the Q3 2026 go-live target which would cede first-mover advantage to DIFC.\n  * Talent Attraction Programme: Visa processing delays averaging 47 days are deterring senior international candidates. Escalation to immigration authority required at ministerial level.\n* The initiatives behind schedule are:\n  * CSO Intelligence Dashboard: Technology vendor change mid-project caused a 6-week delay. New delivery date: 15 September 2026. Contingency: manual reporting continues.\n  * Core Registry Upgrade: Procurement process extended due to additional security review requirements. Revised kick-off: 1 August 2026.",
-      "elapsed_s": 6.61,
+      "answer": "Two initiatives are currently flagged as 'At Risk' and two as 'Behind Schedule'. \nThe initiatives at risk or behind schedule are:\n* Digital Asset Licensing Fast-Track (At Risk): Consultant delivery delayed by 3 weeks. Revised SLA from legal team still outstanding. Risk of missing the Q3 2026 go-live target which would cede first-mover advantage to DIFC [Doc: initiative_status_report_q2_2026.pdf, p.1].\n* Talent Attraction Programme (At Risk): Visa processing delays averaging 47 days are deterring senior international candidates. Escalation to immigration authority required at ministerial level [Doc: initiative_status_report_q2_2026.pdf, p.1].\n* CSO Intelligence Dashboard (Behind): Technology vendor change mid-project caused a 6-week delay. New delivery date: 15 September 2026. Contingency: manual reporting continues [Doc: initiative_status_report_q2_2026.pdf, p.1].\n* Core Registry Upgrade (Behind): Procurement process extended due to additional security review requirements. Revised kick-off: 1 August 2026 [Doc: initiative_status_report_q2_2026.pdf, p.1].",
+      "elapsed_s": 3.31,
       "tools_called": [
         "rag_search"
       ],
@@ -298,7 +298,7 @@
         ]
       },
       "citations": {
-        "total_citations": 1,
+        "total_citations": 4,
         "invalid_citations": 0,
         "valid_rate": 1.0,
         "invalid_doc_cites": [],
@@ -317,8 +317,8 @@
     {
       "id": "8",
       "question": "What milestones were completed in Q2 2026?",
-      "answer": "The following milestones were completed in Q2 2026:\n* Financial Innovation Hub: Three anchor tenants signed (global payments firm, regtech startup, Islamic fintech). Opening ceremony scheduled September 2026. [Doc: initiative_status_report_q2_2026.pdf, p.1]\n* ESG Reporting Framework: Draft framework circulated to 45 licensed entities; 38 responses received. Final version due July 2026. [Doc: initiative_status_report_q2_2026.pdf, p.1]\n* GCC Bilateral Agreements: MOU signed with Bahrain Economic Development Board; discussions advanced with Kuwait CMA. [Doc: initiative_status_report_q2_2026.pdf, p.1]",
-      "elapsed_s": 2.14,
+      "answer": "Here are the milestones completed in Q2 2026:\n \nThe following milestones were completed in Q2 2026. These achievements reflect progress on strategic initiatives aimed at enhancing our financial center's capabilities and competitiveness.\n \n* Financial Innovation Hub: Three anchor tenants signed (global payments firm, regtech startup, Islamic fintech) [Doc: initiative_status_report_q2_2026.pdf, p.1]\n* ESG Reporting Framework: Draft framework circulated to 45 licensed entities; 38 responses received [Doc: initiative_status_report_q2_2026.pdf, p.1]\n* GCC Bilateral Agreements: MOU signed with Bahrain Economic Development Board; discussions advanced with Kuwait CMA [Doc: initiative_status_report_q2_2026.pdf, p.1]",
+      "elapsed_s": 2.9,
       "tools_called": [
         "rag_search"
       ],
@@ -359,9 +359,10 @@
     {
       "id": "9",
       "question": "What does our internal HR parental leave policy say?",
-      "answer": "Our internal HR parental leave policy does not appear in the search results. \n\nLet's try another search. \n[\n  {\n    \"name\": \"rag_search\",\n    \"parameters\": {\n      \"query\": \"parental leave benefits\"\n    }\n  }\n]",
-      "elapsed_s": 2.84,
+      "answer": "Our internal HR parental leave policy doesn't seem to be readily available from the search results provided. No relevant documents were found. \n\nHowever, I can suggest some possible reasons why the policy might not be easily accessible:\n* The policy might be stored in a different location or database that is not accessible through the current search tools.\n* The policy might be part of a confidential or restricted document that requires specific clearance or login credentials.\n\nIf you need to access the parental leave policy, I recommend reaching out to the HR department or checking the company's intranet portal for more information. \n\nLet me know if there's anything else I can assist you with!",
+      "elapsed_s": 2.61,
       "tools_called": [
+        "rag_search",
         "rag_search"
       ],
       "routing": {
@@ -391,8 +392,8 @@
     {
       "id": "10",
       "question": "What is the forecast at completion for the Core Registry Upgrade?",
-      "answer": "The forecast at completion for the Core Registry Upgrade is $3,100,000. Here are the details [Doc: initiative_status_report_q2_2026.pdf, p.2]:\n* Initiative: Core Registry Upgrade\n* Approved Budget: $2,900,000\n* Spent to Date: $435,000\n* Remaining: $2,465,000\n* Forecast at Completion: $3,100,000 \n* Progress: 15% \n* Status: Behind Schedule",
-      "elapsed_s": 7.0,
+      "answer": "The forecast at completion for the Core Registry Upgrade is $3,100,000. Here are the key details:\n* Forecast at Completion: $3,100,000 [Doc: initiative_status_report_q2_2026.pdf, p.2]\n* Approved Budget: $2,900,000\n* Spent to Date: $435,000\n* Remaining Budget: $2,465,000\n* Progress: 15%\n* Status: Behind schedule\n* Owner: Technology department",
+      "elapsed_s": 1.21,
       "tools_called": [
         "rag_search"
       ],
