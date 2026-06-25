@@ -12,7 +12,7 @@ TAVILY_API_KEY = os.getenv("TAVILY_API_KEY", "").strip()
 GROQ_API_KEY   = os.getenv("GROQ_API_KEY", "").strip()
 
 # Chat + voice transcription via Groq; embeddings via local ONNX (all-MiniLM-L6-v2)
-CHAT_MODEL  = os.getenv("GROQ_CHAT_MODEL", "meta-llama/llama-4-scout-17b-16e-instruct").strip()
+CHAT_MODEL  = os.getenv("GROQ_CHAT_MODEL", "llama-3.3-70b-versatile").strip()
 EMBED_MODEL = os.getenv("EMBED_MODEL", "all-MiniLM-L6-v2").strip()
 
 PROJECT_DIR = Path(__file__).parent
