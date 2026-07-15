@@ -32,7 +32,7 @@ if not login_form():
 st.title("CSO of an international financial center")
 st.caption(
     "Secure intelligence layer for a Chief Strategy Officer · "
-    "RAG over your documents + Tavily web search · Powered by Groq (llama-4-scout-17b-16e-instruct) + ONNX embeddings"
+    "RAG over your documents + Tavily web search · Powered by Groq (llama-3.3-70b-versatile) + ONNX embeddings"
 )
 
 
