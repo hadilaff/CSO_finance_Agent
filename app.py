@@ -15,12 +15,11 @@ from briefing import (
 from deck import get_deck, store_deck
 from rag import clear_index, index_file, list_sources
 from voice import synthesize, transcribe
-
 PPTX_MIME = "application/vnd.openxmlformats-officedocument.presentationml.presentation"
 
 st.set_page_config(
-    page_title="CSO Intelligence Assistant",
-    page_icon=":bar_chart:",
+    page_title="Amaris DFI Assistant",
+    page_icon="🤖",
     layout="wide",
 )
 
@@ -29,10 +28,10 @@ if not login_form():
     st.stop()
 
 
-st.title("CSO of an international financial center")
+st.title("Amaris Consulting — DFI Intelligence Assistant")
 st.caption(
-    "Secure intelligence layer for a Chief Strategy Officer · "
-    "RAG over your documents + Tavily web search · Powered by Groq (llama-3.3-70b-versatile) + ONNX embeddings"
+    "Assistant stratégique pour le département DFI (Automation & AI) · "
+    "RAG sur vos documents internes + recherche web Tavily · Powered by Groq (llama-3.3-70b-versatile) + ONNX embeddings"
 )
 
 
@@ -42,8 +41,8 @@ with st.sidebar:
     logout_button(location=st.sidebar)
     st.divider()
 
-    st.header("Institutional Knowledge")
-    st.caption("Upload board papers, strategy memos, performance reports (PDF/DOCX/PPTX/TXT/MD).")
+    st.header("Base de connaissances")
+    st.caption("Upload vos documents internes : expressions de besoin, polices d'assurance, rapports DFI (PDF/DOCX/PPTX/TXT/MD).")
 
     uploads = st.file_uploader(
         "Upload documents",
@@ -53,44 +52,41 @@ with st.sidebar:
     )
 
     if uploads:
-        if st.button("Index uploaded files", type="primary", use_container_width=True):
+        if st.button("Indexer les fichiers", type="primary", use_container_width=True):
             import traceback
-            from rag import parse_file, chunk_text
 
             errors = []
+            successes = []
             progress = st.progress(0.0, text="Indexing…")
             for i, f in enumerate(uploads, start=1):
                 try:
-                    progress.progress((i - 0.5) / len(uploads), text=f"Processing {f.name}…")
+                    progress.progress((i - 0.5) / len(uploads), text=f"Traitement de {f.name}…")
                     data = f.getvalue()
-                    print(f"[index] {f.name} — {len(data):,} bytes")
-
-                    text = parse_file(f.name, data)
-                    print(f"[index]   parsed — {len(text):,} chars")
-
-                    chunks = chunk_text(text)
-                    print(f"[index]   chunked — {len(chunks)} chunks")
-
-                    if not chunks:
-                        print(f"[index]   WARNING: no text extracted from {f.name} (scanned PDF or empty)")
-                        errors.append(f.name)
-                        continue
-
                     n = index_file(f.name, data)
-                    print(f"[index]   stored — {n} chunks in ChromaDB")
-                    progress.progress(i / len(uploads), text=f"Done: {f.name}")
-
+                    if n == 0:
+                        errors.append({"name": f.name, "msg": "Aucun texte extrait — PDF scanné ?", "tb": ""})
+                    else:
+                        successes.append(f"{f.name} ({n} chunks)")
+                    progress.progress(i / len(uploads), text=f"✓ {f.name}")
                 except Exception as e:
-                    errors.append(f.name)
-                    print(f"[index]   ERROR on {f.name}: {e}")
-                    print(traceback.format_exc())
+                    tb = traceback.format_exc()
+                    errors.append({"name": f.name, "msg": str(e), "tb": tb})
+                    print(f"[index] ERROR on {f.name}: {e}\n{tb}")
 
             progress.empty()
-            if errors:
-                print(f"[index] {len(uploads) - len(errors)}/{len(uploads)} succeeded. Failed: {', '.join(errors)}")
-            else:
-                print(f"[index] All {len(uploads)} file(s) indexed.")
+            st.session_state["index_results"] = {"successes": successes, "errors": errors}
             st.rerun()
+
+    # Show indexing results persisted across rerun
+    results = st.session_state.get("index_results")
+    if results:
+        for s in results["successes"]:
+            st.success(f"✅ {s}")
+        for err in results["errors"]:
+            st.error(f"❌ **{err['name']}** — {err['msg']}")
+            if err["tb"]:
+                with st.expander("Voir le détail de l'erreur"):
+                    st.code(err["tb"], language="python")
 
     st.divider()
     try:
@@ -121,13 +117,13 @@ today = _date.today()
 today_brief = load_briefing(today)
 
 with st.expander(
-    f"📅 Today's Strategic Briefing — {today.isoformat()}",
+    f"📅 Daily Consulting Briefing — {today.isoformat()}",
     expanded=bool(today_brief),
 ):
     if today_brief is None:
         st.caption(
-            "Six daily intelligence areas: overnight news, market signals, "
-            "competitor moves, regulatory shifts, performance alerts, risk indicators."
+            "Six daily intelligence areas: AI & automation news, consulting market trends, "
+            "competitor moves, regulatory updates, DFI project alerts, HR & employee benefits."
         )
         if st.button("Generate today's briefing", type="primary", use_container_width=True):
             progress = st.progress(0.0, text="Starting…")
@@ -183,11 +179,11 @@ if "history" not in st.session_state:
 
 # Quick-start prompts (shown only on an empty conversation).
 if not st.session_state.history:
-    st.subheader("Try a quick prompt")
+    st.subheader("Essayez une question rapide")
     quick = [
-        "What are today's most important developments across global financial centers?",
-        "How is DIFC Dubai positioning itself for digital asset businesses, and what should we learn from it?",
-        "Summarise the strategic priorities in my uploaded documents.",
+        "Quels sont les principaux concurrents d'Amaris en automatisation et IA en 2026 ?",
+        "Résume les exigences du projet dans les documents uploadés.",
+        "Quelles sont mes garanties d'assurance en tant qu'employé Amaris ?",
     ]
     cols = st.columns(len(quick))
     for col, prompt in zip(cols, quick):
@@ -253,7 +249,7 @@ for i, turn in enumerate(st.session_state.history):
 
 pending = st.session_state.pop("pending", None)
 chat_input = st.chat_input(
-    "Ask about markets, competitors, regulation, or your uploaded docs…"
+    "Posez votre question sur vos projets DFI, l'assurance, ou l'actualité consulting…"
 )
 
 # Voice input — record once, transcribe via Gemini Flash audio, treat as user input.

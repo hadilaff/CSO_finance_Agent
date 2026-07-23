@@ -1,7 +1,8 @@
-"""Daily Strategic Briefing — direct search + summarize per area.
+"""Daily Consulting Intelligence Briefing — direct search + summarize per area.
 
 Skips the iterative agent loop so each area is a single search + summarize.
 One web/rag fetch + one Groq summarize per area, run in parallel.
+Tailored for Amaris Consulting — DFI department (Automation & AI).
 """
 from __future__ import annotations
 
@@ -20,24 +21,24 @@ BRIEFING_DIR = PROJECT_DIR / "briefings"
 BRIEFING_DIR.mkdir(exist_ok=True)
 
 
-# The 6 Daily Intelligence Areas from the assessment (Section 3).
+# The 6 Daily Intelligence Areas for Amaris Consulting — DFI (Automation & AI department).
 # `tools` controls whether each area pulls from web, rag, or both.
 DAILY_AREAS = [
     {
-        "key": "overnight",
-        "title": "Overnight Intelligence",
-        "icon": "🌙",
+        "key": "ai_automation_news",
+        "title": "AI & Automation News",
+        "icon": "🤖",
         "tools": ["web"],
-        "query": "global financial markets news today",
+        "query": "artificial intelligence automation consulting industry news today",
         "web_topic": "news",
         "web_time_range": "day",
     },
     {
-        "key": "market_signals",
-        "title": "Market Signals",
+        "key": "consulting_market",
+        "title": "Consulting Market Trends",
         "icon": "📈",
         "tools": ["web"],
-        "query": "global capital flows investor sentiment emerging markets",
+        "query": "consulting digital transformation market trends AI outsourcing 2026",
         "web_topic": "news",
         "web_time_range": "week",
     },
@@ -46,48 +47,47 @@ DAILY_AREAS = [
         "title": "Competitor Moves",
         "icon": "🎯",
         "tools": ["web"],
-        "query": "DIFC ADGM Singapore Hong Kong London financial center announcement",
+        "query": "Capgemini Accenture Sopra Steria Devoteam consulting AI automation announcement",
         "web_topic": "news",
         "web_time_range": "week",
     },
     {
         "key": "regulatory",
-        "title": "Regulatory Shifts",
+        "title": "Regulatory & Compliance Updates",
         "icon": "⚖️",
         "tools": ["web"],
-        "query": "financial regulation policy change fintech digital assets",
+        "query": "EU AI Act data regulation compliance consulting GDPR 2026",
         "web_topic": "news",
         "web_time_range": "week",
     },
     {
-        "key": "performance",
-        "title": "Performance Alerts",
+        "key": "dfi_projects",
+        "title": "DFI Project Alerts",
         "icon": "📊",
         "tools": ["rag"],
-        "query": "Initiatives behind plan, off-track KPIs, performance issues, leadership attention needed.",
+        "query": "DFI project status automation AI expression de besoin deliverables at risk deadline",
     },
     {
-        "key": "risks",
-        "title": "Risk Indicators",
-        "icon": "⚠️",
-        "tools": ["rag", "web"],
-        "query": "geopolitical financial market risk regulatory warning",
-        "web_topic": "news",
-        "web_time_range": "week",
+        "key": "hr_benefits",
+        "title": "HR & Employee Benefits",
+        "icon": "👥",
+        "tools": ["rag"],
+        "query": "assurance employee benefits HR policy coverage Amaris",
     },
 ]
 
 
 BRIEFING_SYSTEM_PROMPT = (
-    "You are a strategic intelligence assistant for a Chief Strategy Officer (CSO) "
-    "of an international financial center. Write a short briefing on the area below "
+    "You are a strategic intelligence assistant for Amaris Consulting, DFI department (Automation & AI). "
+    "Write a short briefing on the area below "
     "using ONLY the provided sources. Format:\n"
     "1) One- or two-sentence conclusion first (no bullet, no heading).\n"
     "2) Up to 5 short bullets, each starting with '- '.\n"
     "3) Cite every fact inline: [Web: domain] for web sources, [Doc: filename] for "
     "documents. Use the exact citation labels shown next to each source.\n"
     "If sources are empty or irrelevant, reply exactly: 'No relevant data found.' "
-    "Do not invent facts, domains, or document names."
+    "Do not invent facts, domains, or document names. "
+    "You may respond in French if the sources are in French."
 )
 
 
@@ -342,8 +342,8 @@ def briefing_to_deck_spec(briefing: dict) -> dict:
             "source": f"Daily Briefing {briefing['date']} — internal RAG + web search",
         })
     return {
-        "title": f"Strategic Briefing — {briefing['date']}",
-        "subtitle": "Daily Intelligence Areas",
-        "filename": f"briefing_{briefing['date']}",
+        "title": f"Amaris DFI Daily Briefing — {briefing['date']}",
+        "subtitle": "Consulting Intelligence — Automation & AI",
+        "filename": f"amaris_dfi_briefing_{briefing['date']}",
         "slides": slides,
     }

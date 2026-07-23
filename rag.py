@@ -140,6 +140,50 @@ def _table_to_blocks(title: str, rows: list[list[str]]) -> str:
     return block
 
 
+def _ocr_pdf(data: bytes) -> list[tuple[int, str]]:
+    """OCR fallback for scanned/image-based PDFs using pdf2image + pytesseract.
+
+    Requires:
+      - Tesseract installed on the system (https://github.com/UB-Mannheim/tesseract/wiki)
+      - pdf2image and pytesseract Python packages
+      - poppler on PATH (bundled with pdf2image on Windows via poppler-utils)
+    """
+    try:
+        from pdf2image import convert_from_bytes
+        import pytesseract
+    except ImportError:
+        logger.warning("pdf2image or pytesseract not installed — OCR unavailable.")
+        return []
+
+    # Common Tesseract install path on Windows; no-op on Linux/Mac where it's on PATH
+    import os
+    win_path = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
+    if os.path.exists(win_path):
+        pytesseract.pytesseract.tesseract_cmd = win_path
+
+    try:
+        images = convert_from_bytes(data, dpi=300)
+    except Exception as e:
+        logger.warning("pdf2image conversion failed: %s", e)
+        return []
+
+    pages: list[tuple[int, str]] = []
+    for i, img in enumerate(images, start=1):
+        try:
+            # Try French + English; falls back gracefully if 'fra' data not installed
+            text = pytesseract.image_to_string(img, lang="fra+eng")
+        except Exception:
+            try:
+                text = pytesseract.image_to_string(img)
+            except Exception as e:
+                logger.warning("OCR failed on page %d: %s", i, e)
+                continue
+        if text.strip():
+            pages.append((i, text.strip()))
+        logger.info("OCR page %d: %d chars", i, len(text))
+    return pages
+
+
 def _parse_pdf(data: bytes) -> list[tuple[int, str]]:
     """Return list of (page_number, text) tuples — one per page.
 
@@ -447,8 +491,17 @@ def index_file(filename: str, data: bytes) -> int:
         coll.delete(where={"source": filename})
     except Exception:
         pass
-    ids = [f"{filename}::{i}" for i in range(len(all_chunks))]
-    coll.add(documents=all_chunks, ids=ids, metadatas=all_metadatas)
+
+    # Use chunk_idx (the running counter) in IDs, not range(), to guarantee
+    # uniqueness across all files in the collection.
+    # Also batch in groups of 500 to avoid ChromaDB memory spikes on large docs.
+    BATCH_SIZE = 500
+    for start in range(0, len(all_chunks), BATCH_SIZE):
+        batch_docs  = all_chunks[start:start + BATCH_SIZE]
+        batch_meta  = all_metadatas[start:start + BATCH_SIZE]
+        batch_ids   = [f"{filename}::{m['chunk']}" for m in batch_meta]
+        coll.add(documents=batch_docs, ids=batch_ids, metadatas=batch_meta)
+
     return len(all_chunks)
 
 
