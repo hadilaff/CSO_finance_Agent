@@ -1,6 +1,6 @@
-# CSO Intelligence Assistant
+# Intelligent Assistant
 
-A strategic intelligence chatbot for a Chief Strategy Officer, combining RAG over internal documents with live web search.
+A strategic intelligence chatbot, combining RAG over internal documents with live web search.
 
 **Stack:** Groq (llama-3.3-70b-versatile) · ONNX local embeddings · ChromaDB · Tavily · Streamlit
 
@@ -40,7 +40,7 @@ eval/           Evaluation harness — routing, retrieval, citation, must-contai
 |---|---|---|
 | `section` | Split at numbered headings (`1. Title`, `## Title`), prepend heading to every sub-chunk | Section-specific questions ("what are our milestones?") |
 | `text` | Sliding window (1,200 chars, 200 overlap), split at natural boundaries | Cross-section and keyword queries |
-| `bullet` | One chunk per bullet/list item ≥30 chars | Atomic facts ("recruit 12 professionals", "45% progress") |
+| `bullet` | One chunk per bullet/list item ≥30 chars | Atomic facts  |
 | `table_row` | One sentence per table cell in natural language | Numeric lookups ("28% growth", "$4.2M budget") |
 
 Each document page produces all 4 chunk types, stored together in ChromaDB. Retrieval picks the best match across all layers.
