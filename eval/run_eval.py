@@ -180,7 +180,6 @@ def llm_judge(question: str, ground_truth: str, answer: str) -> dict:
         resp = client.chat.completions.create(
             model=CHAT_MODEL,
             messages=[{"role": "user", "content": prompt}],
-            temperature=0.0,
         )
         text = (resp.choices[0].message.content or "").strip()
         text = re.sub(r"^```(?:json)?\s*|\s*```$", "", text, flags=re.M).strip()

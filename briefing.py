@@ -13,7 +13,8 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import date as _date, datetime
 from pathlib import Path
 
-from config import CHAT_MODEL, PROJECT_DIR, get_groq_client
+# from config import CHAT_MODEL, PROJECT_DIR, get_groq_client   # ← old Groq chat client
+from config import CHAT_MODEL, PROJECT_DIR, get_azure_client
 from rag import search as rag_search_fn
 from search import web_search as web_search_fn
 
@@ -169,27 +170,28 @@ def _gather_rag(query: str, k: int = 3) -> tuple[list[dict], str | None]:
 # ---------- summarize ----------
 
 def _groq_summarize(user_msg: str, max_retries: int = 3) -> str:
-    client = get_groq_client()
+    # Previously used Groq client for summarization — now uses Azure OpenAI.
+    # client = get_groq_client()    # ← old: Groq
+    client = get_azure_client()     # ← new: Azure OpenAI
     last_exc: Exception | None = None
     for attempt in range(1, max_retries + 1):
         try:
             resp = client.chat.completions.create(
-                model=CHAT_MODEL,
+                model=CHAT_MODEL,    # = DEPLOYMENT_NAME on Azure
                 messages=[
                     {"role": "system", "content": BRIEFING_SYSTEM_PROMPT},
                     {"role": "user", "content": user_msg},
                 ],
-                temperature=0.0,
             )
             return (resp.choices[0].message.content or "").strip()
         except Exception as e:
             err = str(e)
-            retryable = any(c in err for c in ("429", "rate_limit", "503", "502"))
+            retryable = any(c in err for c in ("429", "rate_limit", "503", "502", "RateLimitError"))
             if not retryable:
                 raise
             last_exc = e
             time.sleep(3.0 * attempt)
-    raise RuntimeError(f"Groq summarize failed after {max_retries} retries: {last_exc}")
+    raise RuntimeError(f"Azure summarize failed after {max_retries} retries: {last_exc}")
 
 
 def _summarize_area(area_title: str, query: str, sources: list[dict]) -> str:

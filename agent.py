@@ -1,11 +1,16 @@
-"""Groq agent loop with rag_search + web_search + generate_deck tool calling."""
+"""Azure OpenAI agent loop with rag_search + web_search + generate_deck tool calling.
+
+Chat/tool-calling: Azure OpenAI (gpt-5-chat via DEPLOYMENT_NAME)
+Voice (STT):       Groq Whisper (unchanged, in voice.py)
+"""
 from __future__ import annotations
 
 import json
 import logging
 import time
 
-from config import CHAT_MODEL, get_groq_client
+# from config import CHAT_MODEL, get_groq_client   # ← old Groq chat client (kept for reference)
+from config import CHAT_MODEL, get_azure_client
 from deck import store_deck
 from rag import search as rag_search_fn
 from search import web_search as web_search_fn
@@ -17,6 +22,12 @@ SYSTEM_PROMPT = """You are a strategic intelligence assistant for Amaris Consult
 You have TWO tools:
 - rag_search: call this for ANY question about internal documents, "our" organisation, project requirements ("expression de besoin"), employee assurance policies, HR documents, automation initiatives, AI projects, DFI scope, deliverables, timelines, budgets, KPIs, or any uploaded internal file.
 - web_search: call this for consulting industry news, competitor activity (Capgemini, Accenture, Sopra Steria, Devoteam, etc.), market trends in AI/automation/digital transformation, or anything external to Amaris.
+
+IMPORTANT — for assurance/insurance questions:
+- Always call rag_search at least 2-3 times with different French keyword variants.
+- Use exact insurance terminology: "maternité", "accouchement", "grossesse", "capital décès", "garantie décès", "invalidité", "hospitalisation", "remboursement", "plafond", "franchise", "tableau des garanties", "frais médicaux".
+- Search for section titles too: "tableau de garanties", "garanties", "prestations", "tableau des remboursements".
+- Never say information is missing until you have searched with at least 3 different queries.
 
 When the user asks for a deck, slides, or presentation:
 - Call rag_search (and web_search if needed) to gather the content.
@@ -31,7 +42,7 @@ After getting tool results, answer following these rules:
   * "assurance" = employee insurance/benefit documents uploaded by the user
   Do NOT mix these categories unless the user asks for a full overview.
 - If tool results are returned, you MUST use them — even if the match seems indirect. Extract whatever relevant facts are present.
-- Only say "No relevant documents found" if the tool literally returned an empty results list.
+- Only say "No relevant documents found" if the tool literally returned an empty results list after multiple queries.
 - Use the exact wording and status from the source. Never upgrade a status.
 - 1-2 sentence conclusion first, then up to 5 bullets.
 - Cite every fact inline: [Doc: filename, p.N] for internal, [Web: domain] for web.
@@ -47,11 +58,17 @@ TOOLS = [
         "type": "function",
         "function": {
             "name": "rag_search",
-            "description": "Search the CSO's uploaded internal documents. Returns relevant text chunks with source filenames and page numbers.",
+            "description": (
+                "Search internal uploaded documents (insurance policies, HR docs, project requirements, reports). "
+                "For insurance/assurance questions, call this tool MULTIPLE TIMES with different French keyword variants. "
+                "Example for maternity: call with 'maternité accouchement', then 'grossesse frais prise en charge', then 'remboursement naissance'. "
+                "Example for death benefit: call with 'garantie décès capital', then 'décès invalidité montant'. "
+                "Always use French medical/insurance terminology when searching French documents."
+            ),
             "parameters": {
                 "type": "object",
                 "properties": {
-                    "query": {"type": "string", "description": "Search query — use specific terms."}
+                    "query": {"type": "string", "description": "Search query — use specific French insurance/medical terms."}
                 },
                 "required": ["query"],
             },
@@ -77,7 +94,7 @@ TOOLS = [
 # ---------- Tool execution ----------
 
 def _exec_rag(query: str) -> dict:
-    hits = rag_search_fn(query, k=6)
+    hits = rag_search_fn(query, k=12)  # increased from 6 — insurance docs have many sections
     if not hits:
         return {"results": [], "note": "No documents indexed or no matches found."}
     return {
@@ -86,7 +103,7 @@ def _exec_rag(query: str) -> dict:
                 "source": h["source"],
                 "page": h.get("page"),
                 "score": h["score"],
-                "text": h["text"][:1200],  # increased from 800 to avoid mid-sentence truncation
+                "text": h["text"][:1200],
             }
             for h in hits
         ]
@@ -135,46 +152,34 @@ MAX_TOOL_ROUNDS = 6
 
 
 def _chat_with_retry(client, messages, tool_choice: str = "auto", max_retries: int = 3, base_delay: float = 3.0, any_tools_ran: bool = False):
-    """Groq chat with retry on rate-limit and tool-generation errors."""
+    """Azure OpenAI chat with retry on rate-limit and tool-generation errors.
+
+    # Previously: Groq chat — error strings checked for "tool_use_failed" / "Failed to call a function"
+    # Azure uses standard OpenAI error codes, so we keep the same retry logic
+    # but drop Groq-specific error strings.
+    """
     last_exc = None
     for attempt in range(1, max_retries + 1):
         try:
             return client.chat.completions.create(
-                model=CHAT_MODEL,
+                model=CHAT_MODEL,        # = DEPLOYMENT_NAME on Azure
                 messages=messages,
                 tools=TOOLS,
                 tool_choice=tool_choice,
-                temperature=0.0,
             )
         except Exception as e:
             err_str = str(e)
-            if "tool_use_failed" in err_str or "Failed to call a function" in err_str:
-                if attempt < max_retries:
-                    logger.warning("Tool call generation failed (attempt %d), retrying…", attempt)
-                    time.sleep(1.0)
-                    continue
-                if any_tools_ran:
-                    logger.warning("Tool call generation failed, answering from existing tool results.")
-                    return client.chat.completions.create(
-                        model=CHAT_MODEL,
-                        messages=messages,
-                        temperature=0.0,
-                    )
-                logger.warning("Tool call generation failed with no tool results — refusing to answer.")
-                from types import SimpleNamespace
-                fake_msg = SimpleNamespace(
-                    tool_calls=None,
-                    content="I was unable to search the documents for this question. Please try rephrasing it.",
-                )
-                return SimpleNamespace(choices=[SimpleNamespace(message=fake_msg)])
-            is_retryable = any(c in err_str for c in ("503", "502", "429", "rate_limit", "UNAVAILABLE"))
+            # --- Groq-specific errors (kept as comments for reference) ---
+            # if "tool_use_failed" in err_str or "Failed to call a function" in err_str:
+            #     ...Groq tool-call generation failure handling...
+            is_retryable = any(c in err_str for c in ("503", "502", "429", "rate_limit", "UNAVAILABLE", "RateLimitError"))
             if not is_retryable:
                 raise
             last_exc = e
             wait = base_delay * attempt if "429" in err_str else base_delay * (2 ** (attempt - 1))
-            logger.warning("Groq attempt %d/%d failed. Retrying in %.0fs…", attempt, max_retries, wait)
+            logger.warning("Azure attempt %d/%d failed. Retrying in %.0fs…", attempt, max_retries, wait)
             time.sleep(wait)
-    raise RuntimeError(f"Groq chat failed after {max_retries} retries. Last error: {last_exc}")
+    raise RuntimeError(f"Azure OpenAI chat failed after {max_retries} retries. Last error: {last_exc}")
 
 
 # ---------- Deck builder (fallback when model fails to chain generate_deck) ----------
@@ -224,7 +229,6 @@ def _build_deck_from_rag(client, user_message: str, rag_results: list[dict]) -> 
                 {"role": "system", "content": _DECK_BUILDER_PROMPT},
                 {"role": "user", "content": prompt},
             ],
-            temperature=0.0,
         )
         import re as _re
         raw = (resp.choices[0].message.content or "").strip()
@@ -245,7 +249,8 @@ def _build_deck_from_rag(client, user_message: str, rag_results: list[dict]) -> 
 # ---------- Agent loop ----------
 
 def run_agent(user_message: str, history: list[dict]) -> dict:
-    client = get_groq_client()
+    # client = get_groq_client()    # ← old: Groq for chat
+    client = get_azure_client()     # ← new: Azure OpenAI for chat
 
     messages = [{"role": "system", "content": SYSTEM_PROMPT}]
     for turn in history:
