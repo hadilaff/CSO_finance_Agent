@@ -1,4 +1,4 @@
-"""Simple password gate for the CSO Intelligence Assistant.
+"""Simple password gate for the  IntelligenT Assistant.
 
 Set APP_PASSWORD in your .env file. Anyone with the password can sign in.
 
@@ -17,7 +17,7 @@ def _expected_password() -> str:
 
 
 def _login_stage() -> None:
-    st.title("🔒 CSO Intelligence Assistant")
+    st.title("🔒 IntelligenT Assistant")
     st.caption("Enter the access password to continue.")
 
     with st.form("auth_password_form"):

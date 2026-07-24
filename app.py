@@ -13,6 +13,7 @@ from briefing import (
     load_briefing,
 )
 from deck import get_deck, store_deck
+from logigramme import generate_logigramme_from_eb, get_logigramme
 from rag import clear_index, index_file, list_sources
 from voice import synthesize, transcribe
 PPTX_MIME = "application/vnd.openxmlformats-officedocument.presentationml.presentation"
@@ -170,6 +171,84 @@ with st.expander(
                     key=f"dl_briefing_{deck_id}",
                     use_container_width=True,
                 )
+
+
+# ---------- Main: logigramme EB ----------
+
+with st.expander("📊 Générateur de Logigramme — Expression de Besoin", expanded=False):
+    st.caption(
+        "Uploadez un fichier Expression de Besoin (EB) pour générer automatiquement "
+        "un logigramme du processus décrit. Résultat téléchargeable en PNG."
+    )
+    
+    eb_upload = st.file_uploader(
+        "Choisir un fichier EB",
+        type=["pdf", "docx", "txt"],
+        key="eb_uploader",
+        label_visibility="collapsed",
+    )
+    
+    if eb_upload:
+        col_gen, col_info = st.columns([1, 2])
+        with col_gen:
+            if st.button("🔄 Générer le logigramme", type="primary", use_container_width=True):
+                with st.spinner(f"Analyse de {eb_upload.name} et génération du logigramme…"):
+                    try:
+                        result = generate_logigramme_from_eb(eb_upload.name, eb_upload.getvalue())
+                        st.session_state["current_logigramme_id"] = result["logigramme_id"]
+                        st.session_state["current_logigramme_error"] = None
+                        st.rerun()
+                    except Exception as e:
+                        st.session_state["current_logigramme_error"] = str(e)
+                        st.session_state["current_logigramme_id"] = None
+                        st.rerun()
+        with col_info:
+            st.info(f"📄 **{eb_upload.name}** — prêt pour analyse")
+
+    # Afficher erreur si présente
+    logi_err = st.session_state.get("current_logigramme_error")
+    if logi_err:
+        st.error(f"❌ {logi_err}")
+
+    # Afficher logigramme si généré
+    logi_id = st.session_state.get("current_logigramme_id")
+    if logi_id:
+        logi = get_logigramme(logi_id)
+        if logi:
+            st.success(f"✅ Logigramme généré depuis **{logi['source_file']}**")
+            
+            # Afficher le titre et les acteurs
+            structure = logi.get("structure", {})
+            if structure.get("titre"):
+                st.markdown(f"**Processus :** {structure['titre']}")
+            if structure.get("acteurs"):
+                st.markdown(f"**Acteurs :** {', '.join(structure['acteurs'])}")
+            
+            # Afficher l'image
+            st.image(logi["bytes"], use_container_width=True)
+            
+            # Bouton téléchargement PNG
+            st.download_button(
+                label=f"⬇ Télécharger {logi['filename']}",
+                data=logi["bytes"],
+                file_name=logi["filename"],
+                mime="image/png",
+                key=f"dl_logi_{logi_id}",
+                use_container_width=True,
+            )
+            
+            # Optionnel: afficher le code DOT (pour debug ou import dans d'autres outils)
+            with st.expander("🔧 Code source Graphviz (DOT)", expanded=False):
+                st.code(logi["dot_code"], language="dot")
+            
+            # Résumé des étapes
+            etapes = structure.get("etapes", [])
+            if etapes:
+                with st.expander(f"📋 Étapes du processus ({len(etapes)} étapes)", expanded=False):
+                    for e in etapes:
+                        icon = {"debut": "⚫", "fin": "⚫", "decision": "◇", "action": "▭"}.get(e.get("type", "action"), "▭")
+                        acteur = f" *({e.get('acteur', '')})*" if e.get("acteur") else ""
+                        st.markdown(f"{icon} **{e['id']}** — {e['label']}{acteur}")
 
 
 # ---------- Main: chat ----------

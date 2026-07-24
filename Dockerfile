@@ -2,7 +2,12 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
-# Install dependencies first (layer cache)
+# Install system dependencies: graphviz for logigramme generation
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends graphviz && \
+    rm -rf /var/lib/apt/lists/*
+
+# Install Python dependencies (layer cache)
 COPY requirements.txt .
 RUN pip install -r requirements.txt
 
