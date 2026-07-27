@@ -1,6 +1,11 @@
 """Streamlit UI for the Personal AI Assistant (Strategic Intelligence)."""
 from __future__ import annotations
 
+#fix for azure
+__import__('pysqlite3')
+import sys
+sys.modules['sqlite3'] = sys.modules.pop('pysqlite3')
+
 from datetime import date as _date
 
 import streamlit as st
