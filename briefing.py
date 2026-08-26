@@ -1,8 +1,7 @@
-"""Daily Consulting Intelligence Briefing — direct search + summarize per area.
+"""Daily Strategic Briefing — direct search + summarize per area.
 
 Skips the iterative agent loop so each area is a single search + summarize.
 One web/rag fetch + one Groq summarize per area, run in parallel.
-Tailored for Amaris Consulting — DFI department (Automation & AI).
 """
 from __future__ import annotations
 
@@ -13,8 +12,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import date as _date, datetime
 from pathlib import Path
 
-# from config import CHAT_MODEL, PROJECT_DIR, get_groq_client   # ← old Groq chat client
-from config import CHAT_MODEL, PROJECT_DIR, get_azure_client
+from config import CHAT_MODEL, PROJECT_DIR, get_groq_client
 from rag import search as rag_search_fn
 from search import web_search as web_search_fn
 
@@ -22,24 +20,24 @@ BRIEFING_DIR = PROJECT_DIR / "briefings"
 BRIEFING_DIR.mkdir(exist_ok=True)
 
 
-# The 6 Daily Intelligence Areas for Amaris Consulting — DFI (Automation & AI department).
+# The 6 Daily Intelligence Areas from the assessment (Section 3).
 # `tools` controls whether each area pulls from web, rag, or both.
 DAILY_AREAS = [
     {
-        "key": "ai_automation_news",
-        "title": "AI & Automation News",
-        "icon": "🤖",
+        "key": "overnight",
+        "title": "Overnight Intelligence",
+        "icon": "🌙",
         "tools": ["web"],
-        "query": "artificial intelligence automation consulting industry news today",
+        "query": "global financial markets news today",
         "web_topic": "news",
         "web_time_range": "day",
     },
     {
-        "key": "consulting_market",
-        "title": "Consulting Market Trends",
+        "key": "market_signals",
+        "title": "Market Signals",
         "icon": "📈",
         "tools": ["web"],
-        "query": "consulting digital transformation market trends AI outsourcing 2026",
+        "query": "global capital flows investor sentiment emerging markets",
         "web_topic": "news",
         "web_time_range": "week",
     },
@@ -48,47 +46,48 @@ DAILY_AREAS = [
         "title": "Competitor Moves",
         "icon": "🎯",
         "tools": ["web"],
-        "query": "Capgemini Accenture Sopra Steria Devoteam consulting AI automation announcement",
+        "query": "DIFC ADGM Singapore Hong Kong London financial center announcement",
         "web_topic": "news",
         "web_time_range": "week",
     },
     {
         "key": "regulatory",
-        "title": "Regulatory & Compliance Updates",
+        "title": "Regulatory Shifts",
         "icon": "⚖️",
         "tools": ["web"],
-        "query": "EU AI Act data regulation compliance consulting GDPR 2026",
+        "query": "financial regulation policy change fintech digital assets",
         "web_topic": "news",
         "web_time_range": "week",
     },
     {
-        "key": "dfi_projects",
-        "title": "DFI Project Alerts",
+        "key": "performance",
+        "title": "Performance Alerts",
         "icon": "📊",
         "tools": ["rag"],
-        "query": "DFI project status automation AI expression de besoin deliverables at risk deadline",
+        "query": "Initiatives behind plan, off-track KPIs, performance issues, leadership attention needed.",
     },
     {
-        "key": "hr_benefits",
-        "title": "HR & Employee Benefits",
-        "icon": "👥",
-        "tools": ["rag"],
-        "query": "assurance employee benefits HR policy coverage Amaris",
+        "key": "risks",
+        "title": "Risk Indicators",
+        "icon": "⚠️",
+        "tools": ["rag", "web"],
+        "query": "geopolitical financial market risk regulatory warning",
+        "web_topic": "news",
+        "web_time_range": "week",
     },
 ]
 
 
 BRIEFING_SYSTEM_PROMPT = (
-    "You are a strategic intelligence assistant for Amaris Consulting, DFI department (Automation & AI). "
-    "Write a short briefing on the area below "
+    "You are a strategic intelligence assistant for a Chief Strategy Officer (CSO) "
+    "of an international financial center. Write a short briefing on the area below "
     "using ONLY the provided sources. Format:\n"
     "1) One- or two-sentence conclusion first (no bullet, no heading).\n"
     "2) Up to 5 short bullets, each starting with '- '.\n"
     "3) Cite every fact inline: [Web: domain] for web sources, [Doc: filename] for "
     "documents. Use the exact citation labels shown next to each source.\n"
     "If sources are empty or irrelevant, reply exactly: 'No relevant data found.' "
-    "Do not invent facts, domains, or document names. "
-    "You may respond in French if the sources are in French."
+    "Do not invent facts, domains, or document names."
 )
 
 
@@ -170,28 +169,27 @@ def _gather_rag(query: str, k: int = 3) -> tuple[list[dict], str | None]:
 # ---------- summarize ----------
 
 def _groq_summarize(user_msg: str, max_retries: int = 3) -> str:
-    # Previously used Groq client for summarization — now uses Azure OpenAI.
-    # client = get_groq_client()    # ← old: Groq
-    client = get_azure_client()     # ← new: Azure OpenAI
+    client = get_groq_client()
     last_exc: Exception | None = None
     for attempt in range(1, max_retries + 1):
         try:
             resp = client.chat.completions.create(
-                model=CHAT_MODEL,    # = DEPLOYMENT_NAME on Azure
+                model=CHAT_MODEL,
                 messages=[
                     {"role": "system", "content": BRIEFING_SYSTEM_PROMPT},
                     {"role": "user", "content": user_msg},
                 ],
+                temperature=0.0,
             )
             return (resp.choices[0].message.content or "").strip()
         except Exception as e:
             err = str(e)
-            retryable = any(c in err for c in ("429", "rate_limit", "503", "502", "RateLimitError"))
+            retryable = any(c in err for c in ("429", "rate_limit", "503", "502"))
             if not retryable:
                 raise
             last_exc = e
             time.sleep(3.0 * attempt)
-    raise RuntimeError(f"Azure summarize failed after {max_retries} retries: {last_exc}")
+    raise RuntimeError(f"Groq summarize failed after {max_retries} retries: {last_exc}")
 
 
 def _summarize_area(area_title: str, query: str, sources: list[dict]) -> str:
@@ -344,8 +342,8 @@ def briefing_to_deck_spec(briefing: dict) -> dict:
             "source": f"Daily Briefing {briefing['date']} — internal RAG + web search",
         })
     return {
-        "title": f"Amaris DFI Daily Briefing — {briefing['date']}",
-        "subtitle": "Consulting Intelligence — Automation & AI",
-        "filename": f"amaris_dfi_briefing_{briefing['date']}",
+        "title": f"Strategic Briefing — {briefing['date']}",
+        "subtitle": "Daily Intelligence Areas",
+        "filename": f"briefing_{briefing['date']}",
         "slides": slides,
     }

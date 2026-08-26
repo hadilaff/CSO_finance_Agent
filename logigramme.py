@@ -10,14 +10,14 @@ import re
 import uuid
 from pathlib import Path
 
-from config import CHAT_MODEL, get_azure_client
+from config import CHAT_MODEL, get_groq_client
 from rag import parse_file
 
 # Stocker les logigrammes générés en mémoire (comme les decks)
 _LOGIGRAMMES: dict[str, dict] = {}
 
 
-LOGIGRAMME_SYSTEM_PROMPT = """Tu es un expert en analyse de processus et génération de logigrammes pour l'équipe DFI (Automation & AI) d'Amaris Consulting.
+LOGIGRAMME_SYSTEM_PROMPT = """Tu es un expert en analyse de processus et génération de logigrammes.
 
 Ta mission : analyser une "Expression de Besoin" (EB) décrivant un processus métier et produire une structure JSON représentant un logigramme.
 
@@ -58,8 +58,8 @@ IMPORTANT: Retourne UNIQUEMENT le JSON, sans code fences, sans texte avant/aprè
 
 
 def _extract_process_structure(eb_text: str) -> dict:
-    """Utilise Azure OpenAI pour extraire la structure du processus depuis l'EB."""
-    client = get_azure_client()
+    """Utilise LLM pour extraire la structure du processus depuis l'EB."""
+    client = get_groq_client()
     
     # Limiter le texte si trop long (garder les sections clés)
     if len(eb_text) > 8000:

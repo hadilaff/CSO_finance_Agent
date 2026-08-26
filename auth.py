@@ -17,7 +17,7 @@ def _expected_password() -> str:
 
 
 def _login_stage() -> None:
-    st.title("🔒 IntelligenT Assistant")
+    st.title("🔒 CSO Intelligence Assistant")
     st.caption("Enter the access password to continue.")
 
     with st.form("auth_password_form"):

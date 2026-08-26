@@ -1,33 +1,32 @@
-"""Azure OpenAI agent loop with rag_search + web_search + generate_deck tool calling.
-
-Chat/tool-calling: Azure OpenAI (gpt-5-chat via DEPLOYMENT_NAME)
-Voice (STT):       Groq Whisper (unchanged, in voice.py)
-"""
 from __future__ import annotations
 
 import json
 import logging
 import time
 
-# from config import CHAT_MODEL, get_groq_client   # ← old Groq chat client (kept for reference)
-from config import CHAT_MODEL, get_azure_client
+from config import CHAT_MODEL, get_groq_client
 from deck import store_deck
+from forecasting import run_forecast, FORECASTABLE_TICKERS
+from market_data import (
+    fetch_market_data,
+    fetch_macro_data,
+    get_ticker_info,
+    PRESET_WATCHLIST,
+    PRESET_MACRO,
+)
 from rag import search as rag_search_fn
 from search import web_search as web_search_fn
 
 logger = logging.getLogger(__name__)
 
-SYSTEM_PROMPT = """You are a strategic intelligence assistant for Amaris Consulting, specifically serving the DFI department (Digital, Finance & Innovation — the Automation and AI practice).
+SYSTEM_PROMPT = """You are a strategic intelligence assistant for a Chief Strategy Officer (CSO) of an international financial center.
 
-You have TWO tools:
-- rag_search: call this for ANY question about internal documents, "our" organisation, project requirements ("expression de besoin"), employee assurance policies, HR documents, automation initiatives, AI projects, DFI scope, deliverables, timelines, budgets, KPIs, or any uploaded internal file.
-- web_search: call this for consulting industry news, competitor activity (Capgemini, Accenture, Sopra Steria, Devoteam, etc.), market trends in AI/automation/digital transformation, or anything external to Amaris.
-
-IMPORTANT — for assurance/insurance questions:
-- Always call rag_search at least 2-3 times with different French keyword variants.
-- Use exact insurance terminology: "maternité", "accouchement", "grossesse", "capital décès", "garantie décès", "invalidité", "hospitalisation", "remboursement", "plafond", "franchise", "tableau des garanties", "frais médicaux".
-- Search for section titles too: "tableau de garanties", "garanties", "prestations", "tableau des remboursements".
-- Never say information is missing until you have searched with at least 3 different queries.
+You have FIVE tools:
+- rag_search: call this for ANY question about internal documents, "our" organization, milestones, strategy, reports, initiatives, performance, KPIs, licensed entities, licensed firms, registration numbers, fintech, or benchmarking.
+- web_search: call this for competitor activity, regulatory news, or anything requiring live external context.
+- market_data: call this for ANY question about prices, rates, market performance, equity indices, FX, commodities, crypto, ETFs, or time series charts. Examples: "show me S&P 500 over 6 months", "how has EUR/USD moved this year?", "compare gold and bitcoin YTD", "what is the US 10Y yield?".
+- macro_data: call this for macroeconomic indicators from FRED — inflation (CPI), unemployment, interest rates, yield spreads, VIX, dollar index.
+- forecast_market: call this for ANY question about future prices, forecasts, projections, predictions, or expected direction. Examples: "forecast gold for the next 30 days", "where will EUR/USD be in 60 days?", "what is the outlook for Bitcoin?", "predict S&P 500 trend". Always prefer this over market_data when the user is asking about the future.
 
 When the user asks for a deck, slides, or presentation:
 - Call rag_search (and web_search if needed) to gather the content.
@@ -35,23 +34,22 @@ When the user asks for a deck, slides, or presentation:
 - Do NOT output any JSON, tool calls, or code in your response.
 
 After getting tool results, answer following these rules:
-- Answer ONLY what was specifically asked. Respect these definitions:
-  * "milestones" or "achievements" = things already accomplished or signed off
-  * "at risk" or "issues" = projects or tasks flagged as delayed or blocked
-  * "expression de besoin" = a project requirements document describing needs, scope, and objectives for a DFI project
-  * "assurance" = employee insurance/benefit documents uploaded by the user
-  Do NOT mix these categories unless the user asks for a full overview.
-- If tool results are returned, you MUST use them — even if the match seems indirect. Extract whatever relevant facts are present.
-- Only say "No relevant documents found" if the tool literally returned an empty results list after multiple queries.
-- Use the exact wording and status from the source. Never upgrade a status.
+- Answer ONLY what was specifically asked.
+- If tool results are returned, you MUST use them — even if the match seems indirect.
+- Only say "No relevant documents found" if the tool literally returned an empty results list.
+- Use the exact wording and numbers from the source. Never upgrade a status or invent figures.
 - 1-2 sentence conclusion first, then up to 5 bullets.
-- Cite every fact inline: [Doc: filename, p.N] for internal, [Web: domain] for web.
+- Cite every fact inline: [Doc: filename, p.N] for internal docs, [Web: domain] for web, [Market: ticker] for market data, [Macro: series_id] for FRED data, [Forecast: ticker] for forecast results.
 - Do not answer from memory when tools should be used.
-- You may respond in French or English depending on the language used by the user."""
+- For market_data and macro_data results: always mention the period, the latest value, and the % change over the period.
+- For forecast_market results: always state the last actual price, the forecasted end value, the % change, the confidence interval bounds, and the trend direction (upward/flat/downward)."""
 
 
-# ---------- Tool definitions (Groq/OpenAI format) — rag_search + web_search only ----------
-# generate_deck is handled automatically by the agent when deck intent is detected.
+# ── Tool schemas ─────────────────────────────────────────────────────────────
+
+# Flat ticker list for the enum (keeps the schema small)
+_ALL_TICKERS = [t for g in PRESET_WATCHLIST.values() for t in g]
+_ALL_MACRO   = list(PRESET_MACRO.keys())
 
 TOOLS = [
     {
@@ -59,16 +57,14 @@ TOOLS = [
         "function": {
             "name": "rag_search",
             "description": (
-                "Search internal uploaded documents (insurance policies, HR docs, project requirements, reports). "
-                "For insurance/assurance questions, call this tool MULTIPLE TIMES with different French keyword variants. "
-                "Example for maternity: call with 'maternité accouchement', then 'grossesse frais prise en charge', then 'remboursement naissance'. "
-                "Example for death benefit: call with 'garantie décès capital', then 'décès invalidité montant'. "
-                "Always use French medical/insurance terminology when searching French documents."
+                "Search internal uploaded documents (strategy reports, board memos, KPI reports, HR docs, "
+                "insurance policies, project requirements). "
+                "For insurance/assurance questions, call MULTIPLE TIMES with different French keyword variants."
             ),
             "parameters": {
                 "type": "object",
                 "properties": {
-                    "query": {"type": "string", "description": "Search query — use specific French insurance/medical terms."}
+                    "query": {"type": "string", "description": "Search query in the language of the document."},
                 },
                 "required": ["query"],
             },
@@ -78,32 +74,119 @@ TOOLS = [
         "type": "function",
         "function": {
             "name": "web_search",
-            "description": "Search the live web for external intelligence: competitor activity, regulatory updates, market news, capital flows.",
+            "description": "Search the live web for external intelligence: competitor moves, regulatory updates, market news.",
             "parameters": {
                 "type": "object",
                 "properties": {
-                    "query": {"type": "string", "description": "The web search query."}
+                    "query": {"type": "string", "description": "The web search query."},
                 },
                 "required": ["query"],
+            },
+        },
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "market_data",
+            "description": (
+                "Fetch historical price / rate time series for equities, FX, commodities, crypto, and ETFs via Yahoo Finance. "
+                "Use for any question about market performance, price trends, or comparisons over time. "
+                f"Available preset tickers: {', '.join(_ALL_TICKERS[:30])} (and more). "
+                "You can also pass any valid Yahoo Finance ticker (e.g. 'AAPL', 'MSFT', '^VIX')."
+            ),
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "tickers": {
+                        "type": "array",
+                        "items": {"type": "string"},
+                        "description": "List of Yahoo Finance tickers. E.g. ['^GSPC', 'EURUSD=X', 'GC=F'].",
+                    },
+                    "period": {
+                        "type": "string",
+                        "enum": ["1d", "5d", "1mo", "3mo", "6mo", "ytd", "1y", "2y", "5y", "max"],
+                        "description": "Look-back window. Default: '3mo'.",
+                    },
+                },
+                "required": ["tickers"],
+            },
+        },
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "macro_data",
+            "description": (
+                "Fetch macroeconomic time series from the FRED database (Federal Reserve). "
+                "Use for inflation (CPI), unemployment, interest rates, yield spreads, VIX, dollar index. "
+                f"Available series: {', '.join(f'{k} ({v})' for k, v in list(PRESET_MACRO.items())[:6])}."
+            ),
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "series_ids": {
+                        "type": "array",
+                        "items": {"type": "string"},
+                        "description": f"FRED series IDs. Presets: {', '.join(_ALL_MACRO)}.",
+                    },
+                    "period": {
+                        "type": "string",
+                        "enum": ["1mo", "3mo", "6mo", "1y", "2y", "5y"],
+                        "description": "Look-back window. Default: '1y'.",
+                    },
+                },
+                "required": ["series_ids"],
+            },
+        },
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "forecast_market",
+            "description": (
+                "Forecast future prices for a financial instrument using a Prophet time series model. "
+                "Use this for ANY question about future prices, forecasts, projections, predictions, or outlook. "
+                "The model is trained on historical daily prices and returns a point forecast with confidence bands and trend direction. "
+                f"Supported tickers: {', '.join(f'{t} ({l})' for t, l in list(FORECASTABLE_TICKERS.items())[:10])} (and more). "
+                "You can also try any valid Yahoo Finance ticker."
+            ),
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "ticker": {
+                        "type": "string",
+                        "description": "Yahoo Finance ticker to forecast. E.g. 'GC=F' for Gold, 'BTC-USD' for Bitcoin, '^GSPC' for S&P 500.",
+                    },
+                    "periods": {
+                        "type": "integer",
+                        "description": "Number of calendar days to forecast ahead. Default: 30. Max recommended: 90.",
+                    },
+                    "history_period": {
+                        "type": "string",
+                        "enum": ["6mo", "1y", "2y", "5y"],
+                        "description": "How much historical data to train on. More history = better seasonality. Default: '2y'.",
+                    },
+                },
+                "required": ["ticker"],
             },
         },
     },
 ]
 
 
-# ---------- Tool execution ----------
+# ── Tool handlers ─────────────────────────────────────────────────────────────
 
 def _exec_rag(query: str) -> dict:
-    hits = rag_search_fn(query, k=12)  # increased from 6 — insurance docs have many sections
+    hits = rag_search_fn(query, k=12)
     if not hits:
         return {"results": [], "note": "No documents indexed or no matches found."}
     return {
         "results": [
             {
                 "source": h["source"],
-                "page": h.get("page"),
-                "score": h["score"],
-                "text": h["text"][:1200],
+                "page":   h.get("page"),
+                "score":  h["score"],
+                "text":   h["text"][:1200],
             }
             for h in hits
         ]
@@ -118,13 +201,23 @@ def _exec_web(query: str) -> dict:
     return {
         "results": [
             {
-                "title": h["title"],
-                "url": h["url"],
+                "title":   h["title"],
+                "url":     h["url"],
                 "snippet": h["content"][:600],
             }
             for h in hits
         ]
     }
+
+
+def _exec_market(tickers: list[str], period: str = "3mo") -> dict:
+    result = fetch_market_data(tickers, period=period)
+    return result.to_agent_dict()
+
+
+def _exec_macro(series_ids: list[str], period: str = "1y") -> dict:
+    result = fetch_macro_data(series_ids, period=period)
+    return result.to_agent_dict()
 
 
 def _exec_deck(title: str, slides: list, subtitle: str | None = None,
@@ -140,63 +233,90 @@ def _exec_deck(title: str, slides: list, subtitle: str | None = None,
         return {"error": f"Deck generation failed: {e}"}
 
 
+def _exec_forecast(
+    ticker: str,
+    periods: int = 30,
+    history_period: str = "2y",
+) -> dict:
+    result = run_forecast(ticker, periods=periods, history_period=history_period)
+    return result.to_agent_dict()
+
+
 TOOL_HANDLERS = {
-    "rag_search": _exec_rag,
-    "web_search":  _exec_web,
+    "rag_search":      _exec_rag,
+    "web_search":      _exec_web,
+    "market_data":     _exec_market,
+    "macro_data":      _exec_macro,
+    "forecast_market": _exec_forecast,
 }
 
 
-# ---------- Retry wrapper ----------
+# ── Retry wrapper ─────────────────────────────────────────────────────────────
 
 MAX_TOOL_ROUNDS = 6
 
 
-def _chat_with_retry(client, messages, tool_choice: str = "auto", max_retries: int = 3, base_delay: float = 3.0, any_tools_ran: bool = False):
-    """Azure OpenAI chat with retry on rate-limit and tool-generation errors.
-
-    # Previously: Groq chat — error strings checked for "tool_use_failed" / "Failed to call a function"
-    # Azure uses standard OpenAI error codes, so we keep the same retry logic
-    # but drop Groq-specific error strings.
-    """
+def _chat_with_retry(
+    client, messages,
+    tool_choice: str = "auto",
+    max_retries: int = 3,
+    base_delay: float = 3.0,
+    any_tools_ran: bool = False,
+):
+    """Groq chat with retry on rate-limit and tool-generation errors."""
     last_exc = None
     for attempt in range(1, max_retries + 1):
         try:
             return client.chat.completions.create(
-                model=CHAT_MODEL,        # = DEPLOYMENT_NAME on Azure
+                model=CHAT_MODEL,
                 messages=messages,
                 tools=TOOLS,
                 tool_choice=tool_choice,
+                temperature=0.0,
             )
         except Exception as e:
             err_str = str(e)
-            # --- Groq-specific errors (kept as comments for reference) ---
-            # if "tool_use_failed" in err_str or "Failed to call a function" in err_str:
-            #     ...Groq tool-call generation failure handling...
-            is_retryable = any(c in err_str for c in ("503", "502", "429", "rate_limit", "UNAVAILABLE", "RateLimitError"))
+            if "tool_use_failed" in err_str or "Failed to call a function" in err_str:
+                if attempt < max_retries:
+                    logger.warning("Tool call generation failed (attempt %d), retrying…", attempt)
+                    time.sleep(1.0)
+                    continue
+                if any_tools_ran:
+                    logger.warning("Tool generation failed — answering from existing results.")
+                    return client.chat.completions.create(
+                        model=CHAT_MODEL,
+                        messages=messages,
+                        temperature=0.0,
+                    )
+                logger.warning("Tool generation failed with no results — refusing.")
+                from types import SimpleNamespace
+                fake_msg = SimpleNamespace(
+                    tool_calls=None,
+                    content="I was unable to search for this question. Please try rephrasing it.",
+                )
+                return SimpleNamespace(choices=[SimpleNamespace(message=fake_msg)])
+            is_retryable = any(c in err_str for c in ("503", "502", "429", "rate_limit", "UNAVAILABLE"))
             if not is_retryable:
                 raise
             last_exc = e
             wait = base_delay * attempt if "429" in err_str else base_delay * (2 ** (attempt - 1))
-            logger.warning("Azure attempt %d/%d failed. Retrying in %.0fs…", attempt, max_retries, wait)
+            logger.warning("Groq attempt %d/%d failed. Retrying in %.0fs…", attempt, max_retries, wait)
             time.sleep(wait)
-    raise RuntimeError(f"Azure OpenAI chat failed after {max_retries} retries. Last error: {last_exc}")
+    raise RuntimeError(f"Groq chat failed after {max_retries} retries. Last error: {last_exc}")
 
 
-# ---------- Deck builder (fallback when model fails to chain generate_deck) ----------
+# ── Deck builder ──────────────────────────────────────────────────────────────
 
-_DECK_BUILDER_PROMPT = """You are a consulting-style deck builder for Amaris Consulting (DFI department — Automation & AI). Given a user request and retrieved document chunks, produce a JSON deck spec.
+_DECK_BUILDER_PROMPT = """You are a McKinsey-style deck builder. Given a user request and retrieved document chunks, produce a JSON deck spec.
 
 Rules:
 - Use ONLY facts from the provided chunks. Never invent numbers, names, or dates.
 - Every slide title must be an ACTION TITLE (a takeaway sentence, not a topic label).
-  GOOD: "Two DFI projects at risk of missing Q3 2026 deadline"
-  BAD:  "Project Status"
+  GOOD: "Two initiatives at risk threaten Q3 2026 targets"
+  BAD:  "Risk Summary"
 - Include a mix of slide types: bullets, table, chart where data supports it.
-- For charts: use "bar" for comparisons, "column" for progress/budget, "pie" for composition.
 - Keep bullets to 3-5 per slide, short and parallel.
-- Typical structure: Executive Summary (bullets) → Project Portfolio (table) → At-Risk Items (bullets) → Resource/Budget (chart) → Next Steps (bullets)
-- source field: cite the document filename and page, e.g. "expression_de_besoin_dfi.pdf, p.1"
-- You may write slide content in French if the source documents are in French.
+- source field: cite the document filename and page, e.g. "report_q2_2026.pdf, p.1"
 
 Return ONLY a valid JSON object — no prose, no code fences:
 {
@@ -205,14 +325,13 @@ Return ONLY a valid JSON object — no prose, no code fences:
   "filename": "output_filename_no_extension",
   "slides": [
     {"type": "bullets", "title": "action title", "lead_in": "optional framing sentence", "bullets": ["..."], "source": "file.pdf, p.1"},
-    {"type": "table", "title": "action title", "headers": ["Col1","Col2"], "rows": [["a","b"]], "source": "file.pdf, p.2"},
-    {"type": "chart", "title": "action title", "categories": ["A","B"], "series": [{"name": "Series", "values": [1,2]}], "chart_type": "bar", "source": "file.pdf, p.2"}
+    {"type": "table",   "title": "action title", "headers": ["Col1","Col2"], "rows": [["a","b"]], "source": "file.pdf, p.2"},
+    {"type": "chart",   "title": "action title", "categories": ["A","B"], "series": [{"name": "S", "values": [1,2]}], "chart_type": "bar", "source": "file.pdf, p.2"}
   ]
 }"""
 
 
 def _build_deck_from_rag(client, user_message: str, rag_results: list[dict]) -> dict:
-    """Ask Groq to structure RAG chunks into a rich deck spec, then build the PPTX."""
     sources_block = "\n\n".join(
         f"[{r['source']}, p.{r.get('page', '?')}]\n{r['text'][:600]}"
         for r in rag_results[:8]
@@ -236,7 +355,7 @@ def _build_deck_from_rag(client, user_message: str, rag_results: list[dict]) -> 
         spec = json.loads(raw)
         return _exec_deck(**spec)
     except Exception as e:
-        logger.warning("Deck builder LLM call failed (%s) — using simple fallback", e)
+        logger.warning("Deck builder failed (%s) — using simple fallback", e)
         bullets = [r["text"][:200] for r in rag_results[:5]]
         sources = ", ".join({r["source"] for r in rag_results})
         spec = {
@@ -246,11 +365,10 @@ def _build_deck_from_rag(client, user_message: str, rag_results: list[dict]) -> 
         return _exec_deck(**spec)
 
 
-# ---------- Agent loop ----------
+# ── Agent loop ────────────────────────────────────────────────────────────────
 
 def run_agent(user_message: str, history: list[dict]) -> dict:
-    # client = get_groq_client()    # ← old: Groq for chat
-    client = get_azure_client()     # ← new: Azure OpenAI for chat
+    client = get_groq_client()
 
     messages = [{"role": "system", "content": SYSTEM_PROMPT}]
     for turn in history:
@@ -259,13 +377,22 @@ def run_agent(user_message: str, history: list[dict]) -> dict:
     messages.append({"role": "user", "content": user_message})
 
     tool_trace: list[dict] = []
-    has_rag_results = False
-    any_tools_ran = False
+    has_rag_results  = False
+    any_tools_ran    = False
 
-    # Detect deck intent upfront — handle via dedicated flow to avoid
-    # generate_deck tool call failures (complex schema confuses the model)
-    deck_keywords = ("deck", "slides", "presentation", "ppt", "powerpoint")
-    is_deck_request = any(kw in user_message.lower() for kw in deck_keywords)
+    deck_keywords     = ("deck", "slides", "presentation", "ppt", "powerpoint")
+    market_keywords   = ("price", "chart", "plot", "market", "stock", "equity", "index",
+                         "forex", "fx", "currency", "rate", "commodity", "gold", "oil",
+                         "crypto", "bitcoin", "etf", "yield", "inflation", "vix",
+                         "performance", "return", "trend", "s&p", "nasdaq", "dow",
+                         "eur", "usd", "gbp", "jpy", "compare", "ytd", "1y", "6mo")
+    forecast_keywords = ("forecast", "predict", "projection", "outlook", "future",
+                         "next 30", "next 60", "next 90", "where will", "expected",
+                         "will it", "going to", "estimate")
+
+    is_deck_request     = any(kw in user_message.lower() for kw in deck_keywords)
+    is_market_request   = any(kw in user_message.lower() for kw in market_keywords)
+    is_forecast_request = any(kw in user_message.lower() for kw in forecast_keywords)
 
     for _ in range(MAX_TOOL_ROUNDS):
         response = _chat_with_retry(client, messages, any_tools_ran=any_tools_ran)
@@ -275,18 +402,18 @@ def run_agent(user_message: str, history: list[dict]) -> dict:
             answer = (msg.content or "_(no answer)_").strip()
             import re as _re
             answer = _re.sub(
-                r'\[(?!Doc:|Web:)([^\]]+?\.(?:pdf|docx|pptx|txt|md)[^\]]*)\]',
+                r'\[(?!Doc:|Web:|Market:|Macro:)([^\]]+?\.(?:pdf|docx|pptx|txt|md)[^\]]*)\]',
                 r'[Doc: \1]',
                 answer,
                 flags=_re.IGNORECASE,
             )
-            # Guard: if no tools ran at all and this isn't a deck request,
-            # the model answered from memory — replace with a safe refusal.
-            if not any_tools_ran and not is_deck_request:
-                logger.warning("Model answered without calling any tools — refusing to prevent hallucination.")
+            # Hallucination guard — only bypass for market/deck requests which
+            # may legitimately answer without calling a search tool
+            if not any_tools_ran and not is_deck_request and not is_market_request and not is_forecast_request:
+                logger.warning("Model answered without tools — refusing to prevent hallucination.")
                 answer = "I was unable to search the documents for this question. Please try rephrasing it."
-            # If user asked for a deck but model never called generate_deck,
-            # build it automatically from the RAG results we already have.
+
+            # Auto-build deck from accumulated RAG results if model didn't call generate_deck
             deck_called = any(tc["name"] == "generate_deck" for tc in tool_trace)
             if has_rag_results and not deck_called and is_deck_request:
                 rag_results = []
@@ -297,15 +424,16 @@ def run_agent(user_message: str, history: list[dict]) -> dict:
                     deck_result = _build_deck_from_rag(client, user_message, rag_results)
                     tool_trace.append({"name": "generate_deck", "args": {}, "result": deck_result})
                     answer = "Your deck is ready to download."
+
             return {"answer": answer, "tool_calls": tool_trace}
 
-        # Append assistant message with tool calls
+        # Append assistant turn with tool calls
         messages.append({
             "role": "assistant",
             "content": msg.content or "",
             "tool_calls": [
                 {
-                    "id": tc.id,
+                    "id":   tc.id,
                     "type": "function",
                     "function": {"name": tc.function.name, "arguments": tc.function.arguments},
                 }
@@ -313,7 +441,7 @@ def run_agent(user_message: str, history: list[dict]) -> dict:
             ],
         })
 
-        # Execute tools and feed results back
+        # Execute each tool call and feed results back
         for tc in msg.tool_calls:
             name = tc.function.name
             try:
@@ -322,12 +450,10 @@ def run_agent(user_message: str, history: list[dict]) -> dict:
                 args = {}
 
             handler = TOOL_HANDLERS.get(name)
-            result: dict = handler(**args) if handler else {"error": f"Unknown tool: {name}"}
-            if handler:
-                try:
-                    result = handler(**args)
-                except Exception as e:
-                    result = {"error": str(e)}
+            try:
+                result = handler(**args) if handler else {"error": f"Unknown tool: {name}"}
+            except Exception as e:
+                result = {"error": str(e)}
 
             if name == "rag_search":
                 has_rag_results = True
@@ -335,24 +461,22 @@ def run_agent(user_message: str, history: list[dict]) -> dict:
             any_tools_ran = True
             tool_trace.append({"name": name, "args": args, "result": result})
             messages.append({
-                "role": "tool",
+                "role":         "tool",
                 "tool_call_id": tc.id,
-                "content": json.dumps(result),
+                "content":      json.dumps(result),
             })
 
-            # If user asked for a deck and we now have RAG results, build it now
-            # instead of waiting for the model to call generate_deck (unreliable)
-            deck_called = any(tc["name"] == "generate_deck" for tc in tool_trace)
-            if is_deck_request and has_rag_results and not deck_called:
-                rag_results = []
-                for tc in tool_trace:
-                    if tc["name"] == "rag_search":
-                        rag_results.extend(tc["result"].get("results", []))
-                if rag_results:
-                    deck_result = _build_deck_from_rag(client, user_message, rag_results)
-                    tool_trace.append({"name": "generate_deck", "args": {}, "result": deck_result})
-                    # Don't append to messages — this ends the loop on next iteration
-                    break
+        # Auto-trigger deck build as soon as we have RAG results
+        deck_called = any(tc["name"] == "generate_deck" for tc in tool_trace)
+        if is_deck_request and has_rag_results and not deck_called:
+            rag_results = []
+            for tc in tool_trace:
+                if tc["name"] == "rag_search":
+                    rag_results.extend(tc["result"].get("results", []))
+            if rag_results:
+                deck_result = _build_deck_from_rag(client, user_message, rag_results)
+                tool_trace.append({"name": "generate_deck", "args": {}, "result": deck_result})
+                break
 
     return {
         "answer": "I exceeded the tool-call budget. Try rephrasing or narrowing the question.",

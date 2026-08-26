@@ -15,3 +15,8 @@ pytesseract>=0.3.13
 Pillow>=10.0
 graphviz>=0.20
 pysqlite3-binary
+pandas>=2.0
+yfinance>=0.2.40
+fredapi>=0.5.1
+plotly>=5.20
+prophet>=1.1.5
