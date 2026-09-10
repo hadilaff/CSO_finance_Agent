@@ -23,21 +23,43 @@ A strategic intelligence agent for a Chief Strategy Officer (CSO) of an internat
 
 ## Architecture
 
+Two deployment targets on the `agent-dep` branch:
+
 ```
-app.py            Streamlit UI — auth, sidebar, briefing, market dashboard, forecast tab, chat
+frontend/                     → Vercel
+  app/
+    page.tsx                  ← root page (auth gate + app shell, 4-view nav)
+    layout.tsx
+    globals.css
+  components/
+    ChatWindow.tsx            ← messages, voice input, inline charts, deck download
+    MarketChart.tsx           ← Recharts normalised line chart + metric cards
+    ForecastChart.tsx         ← Prophet forecast chart (actual + band + point forecast)
+    MarketDashboard.tsx       ← Markets / Macro / Forecast tabs
+    BriefingPanel.tsx         ← 6-section accordion, generate/refresh/deck buttons
+    FileUpload.tsx            ← drag-drop indexing, sources list
+  lib/
+    api.ts                    ← typed API client (all calls to FastAPI backend)
+
+backend/                      → AWS Lightsail (Docker)
+  main.py                     ← FastAPI — 12 REST endpoints
+  Dockerfile
+  docker-compose.yml
+
 agent.py          Agentic loop — 5 tools: rag_search, web_search, market_data, macro_data, forecast_market
-rag.py            Document parsing, 4-layer chunking, local ONNX embedding, ChromaDB storage + search
+rag.py            Document parsing, 4-layer chunking, ONNX embedding, ChromaDB
 search.py         Tavily web search wrapper
-market_data.py    yfinance market data + FRED macro data fetchers
-forecasting.py    Prophet time series forecasting pipeline
-briefing.py       Daily briefing — 6 areas, parallel fetch + summarize via Groq
-voice.py          Voice input (Groq Whisper) + TTS (edge-tts)
-deck.py           McKinsey-style PowerPoint generator
-logigramme.py     BPMN flowchart generator from French EB PDFs (not yet wired to UI)
-auth.py           Password gate (hmac.compare_digest)
-config.py         API keys, model config, lazy Groq client
-eval/             Evaluation harness — routing, retrieval, citation, must-contain metrics
+market_data.py    yfinance + FRED data fetchers
+forecasting.py    Prophet forecasting pipeline
+briefing.py       Daily briefing — 6 areas parallel
+voice.py          Groq Whisper STT + edge-tts TTS
+deck.py           McKinsey-style PPTX generator
+auth.py           Password gate
+config.py         API keys, model config
+eval/             Evaluation harness
 ```
+
+The `main` branch retains the original Streamlit version (`app.py`) — fully functional for local/Docker use.
 
 ---
 
@@ -132,41 +154,76 @@ Charts also render **inline in chat** when the agent calls `market_data`, `macro
 
 ## Quickstart
 
-### 1. Clone and configure
+### Branch guide
+
+| Branch | Stack | Use case |
+|---|---|---|
+| `main` | Streamlit + Docker | Local dev, quick demo |
+| `agent-dep` | Next.js + FastAPI + Docker | Vercel frontend + Lightsail backend |
+
+---
+
+### Option A — Streamlit (main branch, simplest)
 
 ```bash
-git clone <repo-url>
+git checkout main
+docker compose up --build
+```
+Open http://localhost:8501
+
+---
+
+### Option B — Next.js + FastAPI (agent-dep branch)
+
+#### 1. Clone and configure
+
+```bash
+git checkout agent-dep
 ```
 
 Edit `.env` with your API keys:
 
-| Key | Where to get it | Required |
+| Key | Where | Required |
 |---|---|---|
 | `GROQ_API_KEY` | https://console.groq.com | Yes |
 | `TAVILY_API_KEY` | https://tavily.com | Yes |
-| `APP_PASSWORD` | Choose any password | Yes |
-| `FRED_API_KEY` | https://fred.stlouisfed.org/docs/api/api_key.html | No (macro tab only) |
+| `APP_PASSWORD` | Choose any | Yes |
+| `FRED_API_KEY` | https://fred.stlouisfed.org/docs/api/api_key.html | No |
 
-### 2. Run with Docker (recommended)
+#### 2. Start the FastAPI backend
 
 ```bash
+# From project root
+cd backend
 docker compose up --build
+# API running at http://localhost:8000
+# Docs at http://localhost:8000/docs
 ```
 
-Open http://localhost:8501
-
-> First build installs Prophet + Stan (C++ compile) — takes 3–5 minutes. Subsequent builds are cached.
-> First startup downloads the ONNX embedding model (~90 MB, cached after first run).
-
-### 3. Run locally
+#### 3. Start the Next.js frontend
 
 ```bash
-python -m venv .venv
-source .venv/bin/activate      # macOS/Linux
-# .venv\Scripts\activate       # Windows
+cd frontend
+npm install
+npm run dev
+# UI at http://localhost:3000
+```
 
-pip install -r requirements.txt
-streamlit run app.py
+#### 4. Deploy
+
+**Backend → AWS Lightsail:**
+```bash
+# On your Lightsail instance
+git clone <repo> && cd Agent
+cd backend && docker compose up -d --build
+```
+
+**Frontend → Vercel:**
+```bash
+cd frontend
+# Set environment variable in Vercel dashboard:
+# NEXT_PUBLIC_API_URL = https://your-lightsail-ip-or-domain
+vercel deploy
 ```
 
 ---
