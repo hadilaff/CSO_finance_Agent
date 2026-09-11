@@ -24,8 +24,8 @@ from __future__ import annotations
 import sys
 import os
 
-# ── Make sure the project root is on the path so all existing modules import ─
-ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+# All modules are in the same directory as main.py
+ROOT = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, ROOT)
 
 import io

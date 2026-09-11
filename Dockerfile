@@ -2,21 +2,17 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
-# Install system dependencies: graphviz for logigramme generation
 RUN apt-get update && \
     apt-get install -y --no-install-recommends graphviz && \
     rm -rf /var/lib/apt/lists/*
 
-# Install Python dependencies (layer cache)
-COPY requirements.txt .
+COPY backend/requirements.txt .
 RUN pip install -r requirements.txt
 
-# Copy source code
-COPY *.py ./
+COPY backend/*.py ./
 COPY eval/ ./eval/
 COPY files/ ./files/
 
-# Chroma persistence directory
 RUN mkdir -p .chroma
 
 EXPOSE 8501
