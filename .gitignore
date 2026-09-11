@@ -18,6 +18,9 @@ files/
 # Next.js
 frontend/.next/
 frontend/node_modules/
+.next/
+node_modules/
+.env.local
 frontend/.env.local
 
 # Docker
