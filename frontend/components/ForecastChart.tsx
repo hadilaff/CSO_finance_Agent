@@ -13,6 +13,7 @@ import {
   ReferenceLine,
   ResponsiveContainer,
 } from "recharts";
+// recharts v3 compatible
 import { api, ForecastResponse } from "@/lib/api";
 import { TrendingUp, TrendingDown, Minus } from "lucide-react";
 
