@@ -12,6 +12,7 @@
     "next": "^15.2.5",
     "react": "^19",
     "react-dom": "^19",
+    "react-is": "^19.0.0",
     "recharts": "^3.0.0",
     "lucide-react": "^0.395.0",
     "clsx": "^2.1.1"
