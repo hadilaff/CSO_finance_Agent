@@ -2,10 +2,13 @@ import { NextRequest, NextResponse } from "next/server";
 
 const BACKEND = process.env.API_URL ?? "http://localhost:8000";
 
-async function handler(req: NextRequest, { params }: { params: { path: string[] } }) {
-  const path    = params.path.join("/");
-  const url     = `${BACKEND}/api/${path}`;
-  const headers = new Headers(req.headers);
+async function handler(
+  req: NextRequest,
+  context: { params: Promise<{ path: string[] }> }
+) {
+  const { path } = await context.params;
+  const url      = `${BACKEND}/api/${path.join("/")}`;
+  const headers  = new Headers(req.headers);
   headers.delete("host");
 
   try {
@@ -30,8 +33,8 @@ async function handler(req: NextRequest, { params }: { params: { path: string[] 
   }
 }
 
-export const GET     = handler;
-export const POST    = handler;
-export const DELETE  = handler;
-export const PUT     = handler;
-export const PATCH   = handler;
+export const GET    = handler;
+export const POST   = handler;
+export const DELETE = handler;
+export const PUT    = handler;
+export const PATCH  = handler;
