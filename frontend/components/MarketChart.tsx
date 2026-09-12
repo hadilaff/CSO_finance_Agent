@@ -102,7 +102,7 @@ export default function MarketChart({ result, keyPrefix = "" }: Props) {
             />
             <Tooltip
               contentStyle={{ fontSize: 12, border: "1px solid #e8ecf1", borderRadius: 8 }}
-              formatter={(v: number) => [`${v.toFixed(2)}`, ""]}
+              formatter={(v) => [v != null ? Number(v).toFixed(2) : "", ""]}
             />
             <Legend wrapperStyle={{ fontSize: 11 }} />
             {series.map((s, i) => (

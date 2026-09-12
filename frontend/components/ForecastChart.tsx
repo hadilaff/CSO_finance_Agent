@@ -178,9 +178,9 @@ export default function ForecastChart({ args, summary, keyPrefix = "" }: Props) 
             />
             <Tooltip
               contentStyle={{ fontSize: 11, border: "1px solid #e8ecf1", borderRadius: 8 }}
-              formatter={(v: number, name: string) => [
-                v?.toLocaleString(undefined, { maximumFractionDigits: 4 }),
-                name,
+              formatter={(v, name) => [
+                v != null ? Number(v).toLocaleString(undefined, { maximumFractionDigits: 4 }) : "",
+                String(name),
               ]}
             />
             <Legend wrapperStyle={{ fontSize: 11 }} />
