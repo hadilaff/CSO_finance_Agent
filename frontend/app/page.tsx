@@ -18,19 +18,32 @@ import BriefingPanel from "@/components/BriefingPanel";
 import { api } from "@/lib/api";
 
 // ── Auth gate ─────────────────────────────────────────────────────────────────
-const APP_PASSWORD = process.env.NEXT_PUBLIC_APP_PASSWORD ?? "";
 
 function LoginScreen({ onLogin }: { onLogin: () => void }) {
-  const [pwd, setPwd]     = useState("");
-  const [error, setError] = useState(false);
+  const [pwd, setPwd]       = useState("");
+  const [error, setError]   = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  function submit(e: React.FormEvent) {
+  async function submit(e: React.FormEvent) {
     e.preventDefault();
-    if (pwd === APP_PASSWORD || APP_PASSWORD === "") {
-      onLogin();
-    } else {
+    setLoading(true);
+    setError(false);
+    try {
+      const res = await fetch("/api/auth", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ password: pwd }),
+      });
+      if (res.ok) {
+        onLogin();
+      } else {
+        setError(true);
+        setPwd("");
+      }
+    } catch {
       setError(true);
-      setPwd("");
+    } finally {
+      setLoading(false);
     }
   }
 
@@ -61,9 +74,10 @@ function LoginScreen({ onLogin }: { onLogin: () => void }) {
           )}
           <button
             type="submit"
-            className="w-full py-2.5 bg-navy text-white rounded-xl text-sm font-medium hover:bg-navy/90 transition-colors"
+            disabled={loading}
+            className="w-full py-2.5 bg-navy text-white rounded-xl text-sm font-medium hover:bg-navy/90 disabled:opacity-50 transition-colors"
           >
-            Sign in
+            {loading ? "Signing in…" : "Sign in"}
           </button>
         </form>
       </div>
@@ -248,10 +262,9 @@ function AppShell() {
 export default function Home() {
   const [authed, setAuthed] = useState(false);
 
-  // Persist auth in sessionStorage so refreshing doesn't log out
   useEffect(() => {
     if (typeof window !== "undefined") {
-      setAuthed(sessionStorage.getItem("authed") === "1" || APP_PASSWORD === "");
+      setAuthed(sessionStorage.getItem("authed") === "1");
     }
   }, []);
 
