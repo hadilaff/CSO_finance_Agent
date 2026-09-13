@@ -115,7 +115,7 @@ export const api = {
   indexDocuments: async (files: File[]): Promise<{ results: IndexResult[] }> => {
     const form = new FormData();
     files.forEach((f) => form.append("files", f));
-    const res = await fetch(`/api/proxy/index`, { method: "POST", body: form });
+    const res = await fetch(`${BASE}/api/index`, { method: "POST", body: form });
     if (!res.ok) throw new Error(`Index error ${res.status}`);
     return res.json();
   },
@@ -157,12 +157,12 @@ export const api = {
     }),
 
   deckDownloadUrl: (deck_id: string) =>
-    `/api/proxy/deck/${deck_id}`,
+    `${BASE}/api/deck/${deck_id}`,
 
   transcribe: async (audioBlob: Blob, filename = "audio.wav"): Promise<string> => {
     const form = new FormData();
     form.append("file", audioBlob, filename);
-    const res = await fetch(`/api/proxy/transcribe`, { method: "POST", body: form });
+    const res = await fetch(`${BASE}/api/transcribe`, { method: "POST", body: form });
     if (!res.ok) throw new Error(`Transcription error ${res.status}`);
     const data = await res.json();
     return data.text ?? "";
