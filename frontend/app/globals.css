@@ -1,0 +1,24 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --navy:  #0A2540;
+  --accent:#2E7DDD;
+}
+
+body {
+  @apply bg-gray-50 text-gray-900 antialiased;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar       { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: #f1f5f9; }
+::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+
+/* Markdown in chat answers */
+.prose-answer p   { @apply mb-2 leading-relaxed; }
+.prose-answer ul  { @apply list-disc pl-5 mb-2 space-y-1; }
+.prose-answer ol  { @apply list-decimal pl-5 mb-2 space-y-1; }
+.prose-answer strong { @apply font-semibold; }
+.prose-answer code   { @apply bg-gray-100 px-1 rounded text-sm font-mono; }

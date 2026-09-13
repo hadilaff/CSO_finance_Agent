@@ -1,0 +1,19 @@
+services:
+  api:
+    build:
+      context: ..          # project root — so COPY can reach all .py files
+      dockerfile: backend/Dockerfile
+    ports:
+      - "8000:8000"
+    env_file:
+      - ../.env            # shared .env at project root
+    volumes:
+      - chroma_data:/app/.chroma
+      - briefing_data:/app/briefings
+      - files_data:/app/files
+    restart: unless-stopped
+
+volumes:
+  chroma_data:
+  briefing_data:
+  files_data:

@@ -1,0 +1,13 @@
+# Ignore all Python backend files — Vercel only deploys the Next.js frontend
+*.py
+*.pyc
+__pycache__/
+requirements.txt
+Dockerfile
+docker-compose.yml
+.chroma/
+briefings/
+files/
+eval/
+backend/
+.env
