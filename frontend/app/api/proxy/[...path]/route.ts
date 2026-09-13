@@ -7,7 +7,7 @@ async function handler(
   context: { params: Promise<{ path: string[] }> }
 ) {
   const { path } = await context.params;
-  const url      = `${BACKEND}/api/${path.join("/")}`;
+  const url      = `${BACKEND}/${path.join("/")}`;
   const headers  = new Headers(req.headers);
   headers.delete("host");
 
