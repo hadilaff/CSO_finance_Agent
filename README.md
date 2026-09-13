@@ -12,6 +12,19 @@ A strategic intelligence agent for a Chief Strategy Officer (CSO) of an internat
 
 ---
 
+## Screenshots
+
+### Login
+![Login screen](screenshots/app1.png)
+
+### Chat Interface
+![Chat interface](screenshots/app.png)
+
+### Market Data & Prophet Forecast
+![Forecast chart](screenshots/forecast.png)
+
+---
+
 ## Deployment
 
 | Layer | Platform | Stack |
