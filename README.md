@@ -2,7 +2,47 @@
 
 A strategic intelligence agent for a Chief Strategy Officer (CSO) of an international financial center. Combines RAG over internal documents, live web search, real-time market data, and Prophet-based time series forecasting — all accessible through a conversational chat interface.
 
-**Stack:** Groq (llama-3.3-70b-versatile) · ONNX local embeddings · ChromaDB · Tavily · yfinance · Prophet · Plotly · Streamlit
+---
+
+## 🌐 Live Demo
+
+**Frontend:** [https://cso-finance-agent.vercel.app](https://cso-finance-agent.vercel.app)
+
+> 🔐 Password protected. To request access, contact ME **
+
+---
+
+## Screenshots
+
+### Login
+![Login screen](screenshots/app1.png)
+
+### Chat Interface
+![Chat interface](screenshots/app.png)
+
+### Market Data & Prophet Forecast
+![Forecast chart](screenshots/forecast.png)
+
+---
+
+## Deployment
+
+| Layer | Platform | Stack |
+|---|---|---|
+| Frontend | [Vercel](https://vercel.com) | Next.js 15 + Tailwind + Recharts |
+| Backend | [AWS Lightsail](https://lightsail.aws.amazon.com) | FastAPI + Docker |
+| Vector store | AWS Lightsail (persistent volume) | ChromaDB |
+| Briefing storage | AWS Lightsail (persistent volume) | JSON files |
+
+```
+User browser
+    ↓  HTTPS
+Vercel (Next.js frontend)
+    ↓  server-side proxy (/api/proxy/*)
+AWS Lightsail (FastAPI backend — Docker)
+    ↓
+ChromaDB · Groq · Tavily · yfinance · Prophet
+```
 
 ---
 
@@ -24,19 +64,33 @@ A strategic intelligence agent for a Chief Strategy Officer (CSO) of an internat
 ## Architecture
 
 ```
-app.py            Streamlit UI — auth, sidebar, briefing, market dashboard, forecast tab, chat
-agent.py          Agentic loop — 5 tools: rag_search, web_search, market_data, macro_data, forecast_market
-rag.py            Document parsing, 4-layer chunking, local ONNX embedding, ChromaDB storage + search
-search.py         Tavily web search wrapper
-market_data.py    yfinance market data + FRED macro data fetchers
-forecasting.py    Prophet time series forecasting pipeline
-briefing.py       Daily briefing — 6 areas, parallel fetch + summarize via Groq
-voice.py          Voice input (Groq Whisper) + TTS (edge-tts)
-deck.py           McKinsey-style PowerPoint generator
-logigramme.py     BPMN flowchart generator from French EB PDFs (not yet wired to UI)
-auth.py           Password gate (hmac.compare_digest)
-config.py         API keys, model config, lazy Groq client
-eval/             Evaluation harness — routing, retrieval, citation, must-contain metrics
+frontend/                     → Vercel
+  app/
+    page.tsx                  ← auth gate + 4-view app shell (Chat/Markets/Briefing/Docs)
+    api/auth/route.ts         ← server-side password validation
+    api/proxy/[...path]/      ← reverse proxy to Lightsail backend
+  components/
+    ChatWindow.tsx            ← messages, voice input, inline charts, deck download
+    MarketChart.tsx           ← Recharts normalised line chart + metric cards
+    ForecastChart.tsx         ← Prophet forecast chart (actual + band + point forecast)
+    MarketDashboard.tsx       ← Markets / Macro / Forecast tabs
+    BriefingPanel.tsx         ← 6-section accordion, generate/refresh/deck buttons
+    FileUpload.tsx            ← drag-drop indexing, sources list
+  lib/
+    api.ts                    ← typed API client
+
+backend/                      → AWS Lightsail (Docker)
+  main.py                     ← FastAPI — 12 REST endpoints
+  agent.py                    ← Agentic loop — 5 tools
+  rag.py                      ← Document parsing, 4-layer chunking, ChromaDB
+  market_data.py              ← yfinance + FRED data fetchers
+  forecasting.py              ← Prophet forecasting pipeline
+  briefing.py                 ← Daily briefing — 6 areas parallel
+  search.py                   ← Tavily web search wrapper
+  voice.py                    ← Groq Whisper STT + edge-tts TTS
+  deck.py                     ← McKinsey-style PPTX generator
+  Dockerfile
+  docker-compose.yml
 ```
 
 ---
@@ -103,90 +157,81 @@ yfinance (daily OHLCV history)
 | `yearly_seasonality` | True | Captures annual cycles |
 | `changepoint_prior_scale` | 0.05 | Moderate trend flexibility, reduces overfitting |
 
-### What it can and cannot do
-
-| Can | Cannot |
-|---|---|
-| Extrapolate current trend forward | React to news or events |
-| Capture seasonal patterns | Predict black swan events |
-| Return calibrated confidence intervals | Guarantee price accuracy |
-| Detect past trend changepoints automatically | Know about earnings, rate decisions, geopolitics |
-
 ### Supported instruments
 
-Equities (S&P 500, FTSE, Nikkei, Hang Seng), FX (EUR/USD, GBP/USD, USD/AED, USD/SGD), Commodities (Gold, WTI, Brent), Crypto (BTC, ETH), and bond ETF proxies (TLT, HYG). Any valid Yahoo Finance ticker is also accepted.
+Equities (S&P 500, FTSE, Nikkei, Hang Seng), FX (EUR/USD, GBP/USD, USD/AED, USD/SGD), Commodities (Gold, WTI, Brent), Crypto (BTC, ETH), and bond ETF proxies (TLT, HYG).
 
 ---
 
-## Market Data Dashboard
+## Local Development
 
-The **📈 Market Data** panel has three tabs:
-
-- **📊 Markets** — fetch and compare up to N instruments, normalised line chart (base = 100) + raw price toggle, metric cards with % change
-- **🏦 Macro (FRED)** — Fed rate, CPI, unemployment, VIX, yield spreads (requires `FRED_API_KEY`)
-- **🔮 Forecast** — select instrument + horizon (7–90 days) + training history (6mo–5y), run Prophet, view forecast chart + optional trend decomposition
-
-Charts also render **inline in chat** when the agent calls `market_data`, `macro_data`, or `forecast_market`.
-
----
-
-## Quickstart
-
-### 1. Clone and configure
+### Option A — Streamlit (main branch, simplest)
 
 ```bash
-git clone <repo-url>
-```
-
-Edit `.env` with your API keys:
-
-| Key | Where to get it | Required |
-|---|---|---|
-| `GROQ_API_KEY` | https://console.groq.com | Yes |
-| `TAVILY_API_KEY` | https://tavily.com | Yes |
-| `APP_PASSWORD` | Choose any password | Yes |
-| `FRED_API_KEY` | https://fred.stlouisfed.org/docs/api/api_key.html | No (macro tab only) |
-
-### 2. Run with Docker (recommended)
-
-```bash
+git checkout main
 docker compose up --build
 ```
-
 Open http://localhost:8501
 
-> First build installs Prophet + Stan (C++ compile) — takes 3–5 minutes. Subsequent builds are cached.
-> First startup downloads the ONNX embedding model (~90 MB, cached after first run).
-
-### 3. Run locally
+### Option B — Next.js + FastAPI (agent-dep branch)
 
 ```bash
-python -m venv .venv
-source .venv/bin/activate      # macOS/Linux
-# .venv\Scripts\activate       # Windows
+git checkout agent-dep
+```
 
-pip install -r requirements.txt
-streamlit run app.py
+Create `.env` at project root:
+
+```
+GROQ_API_KEY=your_groq_key
+TAVILY_API_KEY=your_tavily_key
+APP_PASSWORD=your_password
+FRED_API_KEY=your_fred_key        # optional
+```
+
+Start the backend:
+
+```bash
+cd backend
+docker compose up --build
+# API at http://localhost:8000
+# Docs at http://localhost:8000/docs
+```
+
+Start the frontend:
+
+```bash
+cd frontend
+npm install
+npm run dev
+# UI at http://localhost:3000
 ```
 
 ---
 
-## Usage
+## Self-hosting on AWS Lightsail
 
-1. Sign in with your `APP_PASSWORD`
-2. Upload internal documents via the sidebar → click **Index uploaded files**
-3. Ask questions in chat — the agent routes to the right tool automatically
-4. Use the **📅 Today's Strategic Briefing** panel for a daily 6-area intelligence summary
-5. Use the **📈 Market Data** panel to explore live prices, macro indicators, and forecasts
-6. Ask for a deck to get a downloadable McKinsey-style PowerPoint
+```bash
+# On your Lightsail instance
+git clone https://github.com/hadilaff/CSO_finance_Agent.git
+cd CSO_finance_Agent
+git checkout agent-dep
 
-**Example chat questions:**
-- *"What are our Q2 KPIs and which initiatives are at risk?"* → RAG
-- *"What is DIFC announcing this week?"* → web search
-- *"Show me Gold and Bitcoin over the last 6 months"* → market data + chart
-- *"Forecast EUR/USD for the next 30 days"* → Prophet forecast + chart
-- *"What is the current Fed rate and VIX?"* → FRED macro data
-- *"Build me a deck on our strategic priorities"* → RAG + PowerPoint
+# Create .env with your keys
+nano .env
+
+# Start the backend
+cd backend
+sudo docker-compose up -d --build
+```
+
+Open port **8000** in the Lightsail firewall (Networking tab → Add rule → TCP 8000).
+
+Set these in **Vercel → Settings → Environment Variables**:
+
+| Variable | Value |
+|---|---|
+| `APP_PASSWORD` | your password |
+| `API_URL` | `http://your-lightsail-ip:8000` |
 
 ---
 
@@ -208,19 +253,10 @@ streamlit run app.py
 ## Evaluation
 
 ```bash
-# Fast run (no LLM judge)
-python eval/run_eval.py --no-judge --delay 3
-
-# With LLM judge
-python eval/run_eval.py --delay 3
-
-# Smoke test (first 3 rows only)
-python eval/run_eval.py --no-judge --limit 3
+python eval/run_eval.py --no-judge --delay 3   # fast
+python eval/run_eval.py --delay 3              # with LLM judge
+python eval/run_eval.py --no-judge --limit 3   # smoke test
 ```
-
-Results saved to `eval/results.json`. Metrics: tool routing accuracy, retrieval hit rate, citation validity, must-contain coverage.
-
-### Latest results (10 questions, no LLM judge)
 
 | Metric | Score |
 |---|---|
@@ -234,6 +270,6 @@ Results saved to `eval/results.json`. Metrics: tool routing accuracy, retrieval 
 
 ## Security
 
-`APP_PASSWORD` with `hmac.compare_digest` is appropriate for demo and internal use. For production, replace with bcrypt-hashed multi-user credentials and a query audit log.
-
-ChromaDB is persisted in a Docker volume (`chroma_data`) — indexed documents survive container restarts. Only `docker compose down -v` wipes the index.
+- Passwords are validated server-side via a Next.js API route — never exposed to the browser
+- ChromaDB is persisted in a Docker named volume — survives container restarts
+- API keys live in `.env` on the server only — never committed to git
